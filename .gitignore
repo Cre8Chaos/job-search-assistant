@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Packaged skill artifacts (built from this engine, distributed separately)
+*.skill
+
+# Never commit a user workspace if one is ever created inside the repo.
+# (Default workspace lives at ~/Projects/job-search, outside this repo.)
+/workspace/
