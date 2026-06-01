@@ -39,7 +39,8 @@ Run evaluations without pausing for confirmation. Apply the rubric mechanically:
 5. **Write the `## Evaluation` block** to the job file (score table, recommendation,
    Timezone/Travel, Top 5 Missing Keywords, Key Requirements, Grade Adjustment, and
    the 3-question Hiring-Manager Interview Prep with ideal answers grounded in the
-   resume). Append the complete JD under `## Full Job Description` if not already there.
+   resume). **Preserve the `## Full Job Description` section in full** — if the
+   complete JD verbatim isn't already there, add it; never replace it with a summary.
 6. **Update the pipeline grade/status:**
    ```bash
    python scripts/pipeline.py update "<Company>" "<Role>" --grade <A|B|C|D|F> --status Evaluated

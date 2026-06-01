@@ -31,8 +31,11 @@ url: ""
 - **Found:** YYYY-MM-DD
 
 ## Full Job Description
-[Complete JD text — every bullet/section as fetched or pasted. If extraction was
-partial, note "JD incomplete — paste full text to improve scoring."]
+[The COMPLETE job description, VERBATIM — every responsibility, requirement,
+qualification, benefit, and section header, exactly as fetched or pasted. Do NOT
+summarize, paraphrase, or truncate it; this full text is what evaluation and
+tailoring rely on. If only part of the posting could be retrieved, save everything
+you have and add a line: "JD incomplete — paste the full text to improve scoring."]
 
 ## Evaluation
 [Filled by js-evaluate — score table, recommendation, Top 5 Missing Keywords,
