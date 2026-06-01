@@ -40,8 +40,12 @@ result with the QA gate, and optionally renders an ATS PDF. Follow
    ```bash
    python scripts/render_pdf.py "<job_file>"
    ```
-   If Playwright isn't installed the script degrades gracefully (prints where the
-   markdown is and exits 0) — that's fine, the tailored markdown is still ready.
+   This needs **Playwright**. If it isn't installed the script degrades gracefully
+   (prints where the markdown is and exits 0). The first time a user wants a PDF,
+   recommend they install it once so future exports work:
+   ```bash
+   pip install playwright && playwright install chromium
+   ```
 7. **Update status:**
    ```bash
    python scripts/pipeline.py update "<Company>" "<Role>" --status Tailored

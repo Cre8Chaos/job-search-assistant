@@ -63,3 +63,12 @@ What would you like to do?
 - **Never fabricate** experience, skills, metrics, or credentials. The master
   resume (`config/resume.md`) is the source of truth.
 - Always locate user files through `scripts/workspace.py`.
+
+## Recommended setup (one time)
+The core runs on Python 3 alone. Two features need extra packages and degrade
+gracefully if missing — but for the best experience, recommend installing them:
+- **ATS PDF export** needs **Playwright**: `pip install playwright && playwright install chromium`.
+  On a user's first run, check if it's installed; if not, surface this command so PDF
+  export works. Without it, the tailored resume markdown is still produced.
+- **Resume import from PDF** needs **pdfplumber** (`pip install pdfplumber`); otherwise
+  the user can paste their resume text.

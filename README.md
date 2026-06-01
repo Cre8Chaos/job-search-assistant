@@ -39,10 +39,17 @@ python scripts/workspace.py paths      # show where your files live
 python scripts/selftest.py             # verify the engine (no network needed)
 ```
 
-## Optional dependencies
-The core is pure Python stdlib. Two features are optional and degrade gracefully:
-- **PDF rendering** (`render_pdf.py`) needs Playwright: `pip install playwright && playwright install chromium`. Without it, your tailored resume markdown is still produced.
-- **PDF resume import** (`extract_resume.py`) needs `pip install pdfplumber`. Without it, paste your resume text instead.
+## Dependencies
+The core is pure Python stdlib and needs nothing extra. Two features are optional —
+they degrade gracefully if missing, but **install them for the full experience:**
+
+- **ATS PDF export** (`render_pdf.py`) needs **Playwright**. Recommended one-time setup:
+  ```bash
+  pip install playwright && playwright install chromium
+  ```
+  Without it, your tailored resume markdown is still produced — just no PDF.
+- **Resume import from PDF** (`extract_resume.py`) needs **pdfplumber** (`pip install pdfplumber`).
+  Without it, paste your resume text instead.
 
 ## Safety
 - Never submits applications for you — it prepares materials you submit yourself.
