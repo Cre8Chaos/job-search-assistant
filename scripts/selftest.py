@@ -292,9 +292,17 @@ def main():
          lambda: (all("visa sponsorship" not in q.query for q in q1) and
                   any("visa sponsorship" in q.query for q in sponsored), None))
 
-    # no-personal-data audit of the engine
+    # no-personal-data audit of the engine. The shippable engine must contain no
+    # real user data, so we scan for generic PII shapes (an email address, an
+    # absolute home path) rather than any one person's specifics. A private fork
+    # can add its own via JOB_SEARCH_PII_NEEDLES (comma-separated regexes).
     leaks = []
-    needles = [r"\b54136\b", r"\b140000\b", r"michaelgrapentin", r"Little Chute"]
+    default_needles = [
+        r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}",  # any email address
+        r"/Users/[A-Za-z0-9._-]+/",                          # an absolute home path
+    ]
+    extra = os.environ.get("JOB_SEARCH_PII_NEEDLES", "")
+    needles = default_needles + [n for n in (s.strip() for s in extra.split(",")) if n]
     scanned = list((ENGINE / "skills").rglob("*.md")) + \
         list((ENGINE / "references").rglob("*.md")) + \
         [p for p in (ENGINE / "scripts").glob("*.py") if p.name != "selftest.py"]
