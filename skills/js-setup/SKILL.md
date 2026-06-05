@@ -21,19 +21,22 @@ for filtering and scoring. Follow the interview script in
    python scripts/workspace.py ensure
    python scripts/workspace.py paths
    ```
-2. **Run the five intake rounds** from `references/intake-questions.md`, in order:
+2. **Run the six intake rounds** from `references/intake-questions.md`, in order:
    1. Target roles — propose normalized titles + search keywords, then
       **explicitly confirm the title list with the user before writing anything.**
    2. Location & work model.
-   3. Compensation.
-   4. What matters most → 1–5 importance ratings → **normalize to scoring_weights
+   3. Work authorization → `work_authorization.needs_sponsorship` (default false).
+   4. Compensation.
+   5. What matters most → 1–5 importance ratings → **normalize to scoring_weights
       that sum to exactly 100.**
-   5. Domain preferences & dealbreakers.
+   6. Domain preferences & dealbreakers.
    - Ask each round as ONE grouped message. Use AskUserQuestion for multiple-choice
      parts; plain prompts for open-ended parts.
 3. **Write `config/profile.yaml`** at the resolved profile path, matching
-   `references/profile-schema.md`. Double-check `scoring_weights` sums to 100.
-4. **Confirm** a short summary of the saved profile to the user.
+   `references/profile-schema.md`. Double-check `scoring_weights` sums to 100, and
+   include the `work_authorization` block (default `needs_sponsorship: false`).
+4. **Confirm** a short summary of the saved profile to the user (include whether
+   they need visa sponsorship, so the gate behavior is explicit).
 5. **Hand off** to the `js-resume-review` skill to import and review their master
    resume (setup isn't complete until there's a real resume on file).
 

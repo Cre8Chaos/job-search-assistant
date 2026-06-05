@@ -15,6 +15,7 @@ status: "New"      # New | Evaluated | Tailored | Ready | Applied | Skip
 date_found: "YYYY-MM-DD"
 source: ""         # where it was found (search query / board / pasted)
 url: ""
+sponsorship: ""    # only when the user needs sponsorship: offered | not-stated | refused
 ---
 
 # Company Name — Role Title
@@ -25,6 +26,7 @@ url: ""
 - **Location:**
 - **Salary:**
 - **Work model:**
+- **Sponsorship:** [only if the user needs sponsorship: offered | not-stated | refused]
 - **Posted:**
 - **URL:**
 - **Source:**

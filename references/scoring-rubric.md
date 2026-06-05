@@ -8,7 +8,8 @@ first, then apply the rubric.
 Tokens used below (fill from profile):
 `{{TARGET_ROLES}}`, `{{SALARY_MIN}}`, `{{SALARY_TARGET}}`, `{{SALARY_MAX}}`,
 `{{CURRENCY}}`, `{{LOCATION}}`, `{{RADIUS_MILES}}`, `{{REMOTE_OK}}`,
-`{{PREFERRED_DOMAINS}}`, `{{AVOIDED_DOMAINS}}`, and the six `{{WEIGHT_*}}` values.
+`{{PREFERRED_DOMAINS}}`, `{{AVOIDED_DOMAINS}}`, `{{NEEDS_SPONSORSHIP}}`, and the six
+`{{WEIGHT_*}}` values.
 
 ## Domain-Expertise Gate (run BEFORE scoring)
 
@@ -32,6 +33,37 @@ This role explicitly requires [specific expertise] which is not present in the u
 ```
 
 Then update the pipeline grade (see Output).
+
+## Sponsorship Gate (run BEFORE scoring — only if `{{NEEDS_SPONSORSHIP}}` is true)
+
+**Skip this gate entirely when `work_authorization.needs_sponsorship` is false or
+absent.** When the user needs sponsorship, scan the JD for the employer's stance:
+
+- **Explicit refusal** — phrases such as "must be authorized to work without
+  sponsorship", "we are unable to / do not sponsor", "no visa sponsorship", "must not
+  require sponsorship now or in the future", "US citizens or green-card holders only":
+  1. **Cap the grade at F** regardless of other dimensions.
+  2. Skip the full rubric — note the mismatch.
+  3. Write to the job file's `## Evaluation`:
+
+  ```
+  ## Evaluation
+
+  **Grade: F (No Visa Sponsorship)**
+
+  This employer explicitly will not sponsor, and the user requires sponsorship.
+  **Disqualifying requirement:** [quote the exact JD text]
+  **Sponsorship:** refused
+  **Recommendation:** Skip. Do not tailor a resume for this role.
+  ```
+
+  Then update the pipeline grade/status (see Output).
+
+- **Explicit offer** — "visa sponsorship available", "we sponsor", "willing to
+  sponsor/transfer": record `Sponsorship: offered` as a positive signal and **proceed
+  with the normal rubric** below.
+- **Silent** (no sponsorship language): record
+  `Sponsorship: not stated — confirm with recruiter` and **proceed normally**.
 
 ## Dimensions (score each 0–10, multiply by its weight, sum)
 
@@ -113,6 +145,7 @@ Final = Σ(score × weight / 10).
 | **Total** | | | **72.0** | |
 
 **Recommendation:** …
+**Sponsorship:** [only when the user needs sponsorship — one of: refused | offered | not stated — confirm with recruiter]
 **Timezone/Travel:** [e.g. "EST hours required", "up to 10% travel", or "Not specified"]
 **Top 5 Missing Keywords:** keyword1, keyword2, keyword3, keyword4, keyword5
 **Key Requirements (director-written):** [if any]

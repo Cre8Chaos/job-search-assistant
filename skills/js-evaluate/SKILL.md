@@ -32,20 +32,26 @@ Run evaluations without pausing for confirmation. Apply the rubric mechanically:
 2. **Domain-Expertise Gate first:** if the JD hard-requires expertise absent from
    the resume / listed in `domain.dealbreakers`, cap at D, skip the rubric, write the
    mismatch note, update the grade, and move on.
-3. **Score the 6 dimensions** 0–10 each, weight from the profile, sum to a 0–100
+3. **Sponsorship Gate** (only if `work_authorization.needs_sponsorship` is true; skip
+   otherwise): per `references/scoring-rubric.md`, if the JD explicitly refuses
+   sponsorship, **cap at F**, write the "No Visa Sponsorship" note quoting the exact
+   text, set `Sponsorship: refused`, update grade/status, and move on. If it explicitly
+   offers sponsorship record `offered`; if silent record `not stated`, then continue.
+4. **Score the 6 dimensions** 0–10 each, weight from the profile, sum to a 0–100
    total → letter grade.
-4. **Director-written bullet detection** → adjust grade if a rare/specific
+5. **Director-written bullet detection** → adjust grade if a rare/specific
    requirement doesn't match the background; record Key Requirements either way.
-5. **Write the `## Evaluation` block** to the job file (score table, recommendation,
-   Timezone/Travel, Top 5 Missing Keywords, Key Requirements, Grade Adjustment, and
-   the 3-question Hiring-Manager Interview Prep with ideal answers grounded in the
-   resume). **Preserve the `## Full Job Description` section in full** — if the
-   complete JD verbatim isn't already there, add it; never replace it with a summary.
-6. **Update the pipeline grade/status:**
+6. **Write the `## Evaluation` block** to the job file (score table, recommendation,
+   Sponsorship line if applicable, Timezone/Travel, Top 5 Missing Keywords, Key
+   Requirements, Grade Adjustment, and the 3-question Hiring-Manager Interview Prep
+   with ideal answers grounded in the resume). **Preserve the `## Full Job Description`
+   section in full** — if the complete JD verbatim isn't already there, add it; never
+   replace it with a summary.
+7. **Update the pipeline grade/status:**
    ```bash
    python scripts/pipeline.py update "<Company>" "<Role>" --grade <A|B|C|D|F> --status Evaluated
    ```
-7. **Batch summary** when evaluating all: print counts by grade and suggest
+8. **Batch summary** when evaluating all: print counts by grade and suggest
    tailoring the A/B jobs (`js-tailor`).
 
 ## Rules

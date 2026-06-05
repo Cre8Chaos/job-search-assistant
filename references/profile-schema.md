@@ -19,6 +19,9 @@ This is the shape of the per-user `config/profile.yaml` that the setup interview
 | `scoring_weights` | map | Six weights that MUST sum to 100. Derived from the "what matters most" intake round. |
 | `domain.prefer` / `.avoid` | list[str] | Industries to prefer or avoid. |
 | `domain.dealbreakers` | list[str] | Hard requirements that auto-disqualify (feeds the domain-expertise gate). |
+| `work_authorization.needs_sponsorship` | bool | `true` = the user is on a visa and requires the employer to sponsor/transfer. Drives the sponsorship gate in `scoring-rubric.md`. **The whole `work_authorization` block is optional; an absent block is treated as `needs_sponsorship: false`** — existing profiles keep working unchanged. |
+| `work_authorization.visa_type` | str | Optional, informational, e.g. `"F-1 OPT"`, `"H-1B"`, `"TN"`. |
+| `work_authorization.notes` | str | Optional free-text, e.g. `"OPT expires 2027-06"`. |
 
 The six `scoring_weights` keys are fixed (they map 1:1 to the rubric in
 `scoring-rubric.md`): `role_title_match`, `salary_fit`, `remote_location`,
@@ -68,4 +71,11 @@ domain:
   prefer: []
   avoid: []
   dealbreakers: []
+
+# Optional. Omit the whole block (or set needs_sponsorship: false) for users who are
+# already authorized to work without sponsorship — the sponsorship gate stays dormant.
+work_authorization:
+  needs_sponsorship: false   # true = on a visa, requires employer sponsorship/transfer
+  visa_type: ""              # optional, e.g. "F-1 OPT", "H-1B", "TN"
+  notes: ""                  # optional, e.g. "OPT expires 2027-06"
 ```

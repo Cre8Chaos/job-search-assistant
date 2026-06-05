@@ -18,6 +18,13 @@ separate **workspace** resolved through one seam (`scripts/workspace.py`).
    resume QA gate (blocks fabrication / ATS problems), and optionally render an ATS PDF.
 6. **Track** — a local markdown application pipeline.
 
+### On a visa / need sponsorship?
+The intake interview asks whether you need an employer to **sponsor or transfer a work
+visa**. If you do, the assistant biases sourcing toward sponsor-friendly employers, flags
+each posting's sponsorship stance, and **automatically skips (grade F)** any role that
+explicitly refuses sponsorship — so you never waste time tailoring for a dead end. If you
+don't need sponsorship, this stays completely off and nothing changes.
+
 ## Quick start
 1. Open this project in Claude Code.
 2. Say **"help me find a job"** (or run the `job-search` skill). On first run it will:
