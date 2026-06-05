@@ -1,0 +1,58 @@
+# Sample workspace — FICTIONAL persona "Jordan Rivera".
+# This is a demo/test fixture, NOT a real user. Used by scripts/run_test.sh to
+# exercise the engine end-to-end with zero personal data. Safe to ship publicly.
+
+target_roles:
+  - Senior Product Manager
+  - Technical Product Manager
+  - AI Product Manager
+  - Platform Product Manager
+
+search_keywords:
+  - "Senior Product Manager"
+  - "Technical Product Manager"
+  - "AI Product Manager"
+  - "Platform Product Manager"
+  - "Product Manager Machine Learning"
+
+location:
+  city: "Austin"
+  state: "TX"
+  zip: "78701"
+  radius_miles: 25
+  remote: true
+
+salary:
+  min: 140000
+  target: 165000
+  max: 190000
+  currency: USD
+
+work_model:
+  - remote
+  - hybrid
+
+# Must sum to 100.
+scoring_weights:
+  role_title_match: 25
+  salary_fit: 20
+  remote_location: 20
+  tech_alignment: 15
+  company_stability: 10
+  career_trajectory: 10
+
+domain:
+  prefer:
+    - AI / ML
+    - SaaS
+    - Developer tools
+  avoid:
+    - Gambling
+    - Adtech
+  dealbreakers:
+    - On-call pager rotation as primary duty
+
+work_authorization:
+  needs_sponsorship: false
+  visa_type: ""
+  notes: ""

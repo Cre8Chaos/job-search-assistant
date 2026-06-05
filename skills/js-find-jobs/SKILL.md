@@ -9,42 +9,79 @@ description: >
 
 # Find Jobs (web search)
 
-Sources jobs with the WebSearch + WebFetch tools — no scraping, no Playwright.
-Manual paste of a URL or JD text is a first-class path and the most reliable.
+Sources jobs with the WebSearch + WebFetch tools — **no scraping, no Playwright**.
+A deterministic query plan (`scripts/search_planner.py`) drives coverage so it is
+consistent run-to-run instead of improvised. Manual paste of a URL or JD text is a
+first-class path and the most reliable.
 
 ## Steps
+
 1. **Read the profile** (resolve path via `python scripts/workspace.py paths`):
-   use `search_keywords`, `location`, `work_model`, `salary`.
+   note `search_keywords`, `location`, `work_model`, `salary`, and
+   `work_authorization` (whether `needs_sponsorship` is true — it adjusts steps 3
+   and 6; when false/absent, sourcing is unchanged).
+
 2. **Manual path (preferred when the user has a specific posting):** if the user
    pastes a URL, WebFetch it; if they paste JD text, use it directly. Skip to step 5.
-3. **Search:** for the top 5–8 `search_keywords`, run WebSearch combining the title
-   with location/remote intent. Prefer ATS-hosted boards that WebFetch reads well:
-   `site:boards.greenhouse.io`, `site:jobs.lever.co`, `site:jobs.ashbyhq.com`, plus
-   general queries. Collect candidate posting URLs.
+
+3. **Build the query plan, then search.** Generate the deterministic query set:
+   ```bash
+   python scripts/search_planner.py --json        # or --profile <path> for a test workspace
+   ```
+   Each query is tagged with `board` (greenhouse / lever / ashby / workday / builtin /
+   general), `keyword`, and `kind` (remote / location). These ATS boards are chosen
+   because WebFetch reads them reliably; LinkedIn/Indeed are deliberately excluded (JS-
+   walled and ToS-sensitive — that reach lives in the separate personal scraper tool,
+   not this product).
+   - Run WebSearch for a **breadth-first slice**: take the first query for **each board
+     across the top 3–4 keywords** before going deep on any single keyword, so coverage
+     is spread rather than exhausting one title. Cap at **~15–20 searches per run** to
+     stay fast and cheap.
+   - The planner already encodes sponsorship intent (`needs_sponsorship: true` appends
+     `visa sponsorship` to queries and you should favor larger/established employers).
+     This is best-effort bias, not a guarantee — verify each posting in step 6.
+   - Collect candidate posting URLs from the results.
+
 4. **Dedupe** candidates against existing files in the workspace `jobs_dir`
-   (by company+role slug) and within the current batch.
+   (by company+role slug) and within the current batch, before any WebFetch.
+
 5. **WebFetch each surviving URL.** Ask the fetch to return the structured fields
    (company, role, location, salary if listed, work model) **AND the complete job
    description text VERBATIM — every responsibility, requirement, qualification, and
-   section, not a summary.** If a page is blocked or JS-only (common for LinkedIn/
-   Indeed) and the JD comes back thin or summarized, keep what you have and mark it
+   section, not a summary.** If a page is blocked or JS-only and the JD comes back thin
+   or summarized, keep what you have and mark it
    `JD incomplete — paste full text to improve scoring` (and offer to take a pasted JD).
+
 6. **Coarse pre-filter** using the profile: title fuzzy-match, location/remote fit,
-   salary floor (missing salary is OK — it's handled during scoring).
+   salary floor (missing salary is OK — handled during scoring).
+   - **If `needs_sponsorship` is true:** scan each JD for explicit refusal language
+     ("no visa sponsorship", "must be authorized without sponsorship", "US citizens/GC
+     holders only"). Drop those, or keep them clearly flagged `sponsorship: refused`.
+     Label every surfaced job with its sponsorship stance (`offered` / `not stated` /
+     `refused`). Stance is best-effort from JD text — say so.
+
 7. **Present a numbered list of the passing jobs and get the user's approval
-   BEFORE writing any files.** Let them drop any they don't want.
+   BEFORE writing any files.** Let them drop any they don't want. When sponsorship
+   matters, show each job's sponsorship stance in the list.
+
 8. **For each approved job**, write a file to `jobs_dir` named
    `<company-slug>-<role-slug>-<YYYY-MM-DD>.md` using `references/job-file-template.md`.
-   Fill Metadata, and paste the **COMPLETE job description text, verbatim**, into the
-   `## Full Job Description` section — every responsibility, requirement, and section
-   exactly as fetched or pasted. **Never summarize or truncate the JD** (evaluation and
-   tailoring depend on the full text). Then add a pipeline row:
+   Fill Metadata (set the `sponsorship` field — `offered`/`not-stated`/`refused` — when
+   `needs_sponsorship` is true; leave blank otherwise), and paste the **COMPLETE job
+   description text, verbatim**, into the `## Full Job Description` section — every
+   responsibility, requirement, and section exactly as fetched or pasted. **Never
+   summarize or truncate the JD** (evaluation and tailoring depend on the full text).
+   Then add a pipeline row:
    ```bash
    python scripts/pipeline.py add "<Company>" "<Role>" "<relative/path/to/job.md>"
    ```
+
 9. Tell the user how many were added and suggest running **js-evaluate**.
 
-## Limits to surface honestly
-- Search returns aggregator/expired links and some boards block WebFetch — coverage
-  is best-effort, not exhaustive. Say so; don't imply you searched everywhere.
-- Cap searches per run to keep it fast and cheap; mention if you capped.
+## Coverage honesty (always surface)
+
+- Report how many of the planned queries you actually ran and which boards you covered
+  vs. capped. Don't imply you searched everywhere.
+- Web search returns aggregator/expired links and some boards block WebFetch — coverage
+  is best-effort. If you hit the per-run cap, say so and offer to run another slice
+  (the plan is deterministic, so the next slice picks up where this one left off).

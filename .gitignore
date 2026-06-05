@@ -15,3 +15,7 @@ venv/
 # Never commit a user workspace if one is ever created inside the repo.
 # (Default workspace lives at ~/Projects/job-search, outside this repo.)
 /workspace/
+
+# Scratch workspace created by scripts/run_test.sh (a throwaway copy of
+# examples/sample-workspace). The committed fixture is the source; this is disposable.
+/.test-workspace/

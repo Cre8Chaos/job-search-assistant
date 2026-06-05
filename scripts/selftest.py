@@ -243,6 +243,55 @@ def main():
     test("jobfile extracts resume between markers",
          lambda: (jobfile.tailored_resume(job_file(RESUME_BODY)).startswith("# Jane Doe"), None))
 
+    # search_planner: deterministic, deduped, ToS-safe query planning
+    import search_planner
+    planner_profile = {
+        "search_keywords": ["Senior Product Manager", "AI Product Manager"],
+        "location": {"city": "Austin", "state": "TX", "remote": True},
+        "work_model": ["remote", "hybrid"],
+    }
+    q1 = search_planner.build_queries(planner_profile)
+    q2 = search_planner.build_queries(planner_profile)
+    test("search_planner is deterministic across runs",
+         lambda: ([q.query for q in q1] == [q.query for q in q2], None))
+    test("search_planner produces no duplicate queries",
+         lambda: (len({q.query for q in q1}) == len(q1), f"{len(q1)} queries"))
+    # Per-intent coverage: every default board must appear within the remote intent
+    # alone (a subset check across all intents could mask a per-intent regression).
+    _default_boards = {b[0] for b in search_planner.DEFAULT_BOARDS}
+    _remote_boards = {q.board for q in q1 if q.kind == "remote"}
+    test("search_planner covers all default ATS boards within a single intent",
+         lambda: (_default_boards <= _remote_boards, str(sorted(_remote_boards))))
+    test("search_planner emits remote-intent queries when remote is true",
+         lambda: (any(q.kind == "remote" for q in q1), None))
+    # No query may contain a bare ` OR ` (unparenthesized OR breaks site: scoping)
+    test("search_planner emits no unparenthesized OR queries",
+         lambda: (all(" OR " not in q.query for q in q1), None))
+    # A non-string keyword (e.g. an all-digit token coerced to int) must not crash
+    test("search_planner tolerates non-string keywords",
+         lambda: (len(search_planner.build_queries({"search_keywords": [2024, "PM"]})) > 0, None))
+    # fallback YAML-subset parser reads the fixed schema without PyYAML
+    parsed = search_planner._parse_profile_subset(PROFILE)
+    test("search_planner fallback parser extracts search_keywords",
+         lambda: (parsed.get("search_keywords") == ["Senior Product Manager"], str(parsed.get("search_keywords"))))
+    test("search_planner fallback parser reads nested location.remote bool",
+         lambda: (parsed.get("location", {}).get("remote") is True, str(parsed.get("location"))))
+    # nested lists under a map key (domain.*) must survive, and quoted numerics
+    # (e.g. a ZIP with a leading zero) must stay strings — both regressions fixed.
+    nested = search_planner._parse_profile_subset(
+        'domain:\n  prefer:\n    - AI\n    - SaaS\n  avoid:\n    - Adtech\n'
+        'location:\n  zip: "00501"\n  remote: true\n')
+    test("search_planner fallback parser keeps nested lists under a map",
+         lambda: (nested.get("domain", {}).get("prefer") == ["AI", "SaaS"], str(nested.get("domain"))))
+    test("search_planner fallback parser keeps quoted numerics as strings",
+         lambda: (nested.get("location", {}).get("zip") == "00501", str(nested.get("location"))))
+    # sponsorship intent only appears when needs_sponsorship is true
+    sponsored = search_planner.build_queries(
+        {**planner_profile, "work_authorization": {"needs_sponsorship": True}})
+    test("search_planner adds visa-sponsorship intent only when needed",
+         lambda: (all("visa sponsorship" not in q.query for q in q1) and
+                  any("visa sponsorship" in q.query for q in sponsored), None))
+
     # no-personal-data audit of the engine
     leaks = []
     needles = [r"\b54136\b", r"\b140000\b", r"michaelgrapentin", r"Little Chute"]
