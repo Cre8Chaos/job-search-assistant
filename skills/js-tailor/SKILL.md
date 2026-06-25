@@ -36,6 +36,9 @@ result with the QA gate, and optionally renders an ATS PDF. Follow
    - **Exit 0** → proceed.
 5. **Draft the cover letter** per `references/cover-letter-rules.md` and write it to
    the job file's `## Cover Letter`. Self-check every claim against the master resume.
+   Anchor the "why this company" hook in a **verified fact from the Company Snapshot**
+   (a recent move, the ownership structure, a strategic shift) — never a company fact
+   stated from memory.
 6. **Optional ATS PDF** (only after QA passes):
    ```bash
    python scripts/render_pdf.py "<job_file>"
@@ -52,7 +55,9 @@ result with the QA gate, and optionally renders an ATS PDF. Follow
    ```
    (Use `Ready` once a PDF exists and the user has reviewed it.)
 8. **Confirm** to the user: what was tailored, QA result, where the files are, and that
-   they should review before applying manually.
+   they should review before applying manually. Point them to the **Interview Prep**
+   pack in the job file's `## Evaluation` and ask which interview stage is coming up so
+   it can be weighted.
 
 ## Rules
 - **Never auto-apply.** Output materials for the user to submit themselves.

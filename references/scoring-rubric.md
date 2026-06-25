@@ -65,6 +65,41 @@ absent.** When the user needs sponsorship, scan the JD for the employer's stance
 - **Silent** (no sponsorship language): record
   `Sponsorship: not stated — confirm with recruiter` and **proceed normally**.
 
+## Company Intelligence (live, verified — run BEFORE scoring Salary & Stability)
+
+Establish current, verified facts about the company BEFORE scoring. Do not score
+company stability or salary from training data. Anything that changes over time
+(ownership, funding, headcount, leadership, recent news) must be confirmed by web
+search, because the model's training data goes stale and will state old facts with
+full confidence.
+
+Run targeted web searches to confirm:
+
+- **Ownership / structure** — public or private? If public, the ticker. If private,
+  who owns it (PE firm, founders, parent company) and the most recent ownership event
+  (IPO, take-private, acquisition, merger) with its date.
+- **Funding / valuation** — the most recent round or transaction, amount, and date.
+- **Size** — current employee headcount (Glassdoor, PitchBook, LinkedIn, or the
+  company site).
+- **Headquarters and footprint.**
+- **Recent developments** — 2–4 items from the last 12 months: product launches,
+  acquisitions or divestitures, leadership changes, layoffs, funding.
+- **Culture and comp read** — Glassdoor rating, recurring pros and cons, and whether
+  employees see comp as above or below market.
+- **Comp benchmark** — the company's posted ranges on comparable roles, plus the
+  market range for the target title.
+
+Rules:
+
+1. Never state ownership, public/private status, ticker, funding, valuation, or
+   headcount from memory. Confirm each by search.
+2. If a fact cannot be confirmed, label it "unverified" in the output. Do not guess,
+   and do not invent a source.
+3. Stamp the output with the verification date.
+
+Write the results into the job file as a **Company Snapshot** block (see Output).
+These verified facts drive the Salary Fit and Company Stability scores below.
+
 ## Dimensions (score each 0–10, multiply by its weight, sum)
 
 ### 1. Role Title Match — weight `{{WEIGHT_ROLE}}`%
@@ -81,6 +116,9 @@ Score against the user's band (`{{SALARY_MIN}}`–`{{SALARY_MAX}}` `{{CURRENCY}}
 - 6: Salary not listed, or company is plausibly within band
 - 4: JD states just below `{{SALARY_MIN}}` (within ~10%)
 - 0–2: Clearly below band
+- When the JD omits pay, score from the **verified comp benchmark** in Company
+  Intelligence (the company's posted ranges on comparable roles plus the market range
+  for the title) — not from company prestige or memory.
 
 ### 3. Remote / Location — weight `{{WEIGHT_LOCATION}}`%
 - 10: Fully remote, no restriction (only full credit if `{{REMOTE_OK}}` is true)
@@ -100,6 +138,8 @@ Score how well the role's domain/tech matches `{{PREFERRED_DOMAINS}}` (and is no
 - 0: In an avoided domain
 
 ### 5. Company Stability — weight `{{WEIGHT_STABILITY}}`%
+Score from the **verified facts** in Company Intelligence. Do not score ownership,
+funding, or headcount from training data.
 - 10: Public or large established private (>1000)
 - 8: Series C+ (>200)
 - 6: Series B
@@ -145,6 +185,18 @@ Final = Σ(score × weight / 10).
 | **Total** | | | **72.0** | |
 
 **Recommendation:** …
+
+**Company Snapshot** *(facts verified via web search as of YYYY-MM-DD)*
+- **Ownership / structure:** [public + ticker | private + owner]; most recent event: [IPO / take-private / acquisition / merger] (date)
+- **Funding / valuation:** [most recent transaction + amount + date, or "n/a"]
+- **Size:** ~[headcount] employees ([source])
+- **Headquarters:** [city, state]
+- **What they do:** [one line]
+- **Recent developments:** [2–4 items from the last 12 months]
+- **Culture read:** [Glassdoor rating + recurring pros/cons + comp sentiment]
+- **Comp benchmark:** [company's posted ranges on comparable roles + market range for the title]
+- Any fact that could not be confirmed is labeled "unverified."
+
 **Sponsorship:** [only when the user needs sponsorship — one of: refused | offered | not stated — confirm with recruiter]
 **Timezone/Travel:** [e.g. "EST hours required", "up to 10% travel", or "Not specified"]
 **Top 5 Missing Keywords:** keyword1, keyword2, keyword3, keyword4, keyword5
@@ -153,15 +205,34 @@ Final = Σ(score × weight / 10).
 
 ---
 
-**Hiring Manager Interview Prep**
-*The 3 hardest questions a hiring manager would ask for this role, with ideal answers grounded in the user's real experience from config/resume.md:*
+**Interview Prep**
 
-**Q1: …**
-> **Ideal Answer:** …
-**Q2: …**
-> **Ideal Answer:** …
-**Q3: …**
-> **Ideal Answer:** …
+**Stage:** If the user named the interview stage (recruiter screen, hiring-manager round, panel), weight this prep to that stage and say which one it is. If the stage is unknown, include both the recruiter screen and the hiring-manager sets below. A recruiter screen and a technical round need different prep — don't hand someone technical STAR answers for a call that's really about logistics and comp.
+
+**One-line positioning** — a single sentence the candidate leads with when asked "why you." Land domain fit, the strongest differentiator for this role, and why this candidate over a generic one. Ground it only in real experience from config/resume.md.
+
+**Recruiter / HR screen** — the questions a recruiter actually asks, with how to answer each (60–90 seconds, lead with a concrete example), grounded only in config/resume.md and the Company Snapshot:
+- "Tell me about yourself." Three beats: where you are now, the through-line of your career, what you're running toward. Not a resume recital.
+- "Why are you looking / why leave?" Forward pull, never a complaint about the current employer.
+- "Why this company?" Tie domain + the role's focus + something current about the company (from the Company Snapshot — a recent move, the ownership structure, a strategic shift).
+- "Walk me through your relevant experience." The screening-checkbox question for the role's headline requirement. Be specific and honest; name the growth edge rather than bluffing it.
+- "Compensation expectations." See the comp strategy below.
+- "Work arrangement / availability." Clean answers once logistics are confirmed.
+
+**Hiring-manager technical Q&A** — adopt the persona of the hiring manager for this role. Ask the 3 hardest TECHNICAL questions that expose whether the candidate can actually do the job, targeting the toughest JD requirements/differentiators. For each, write the perfect response in STAR format, grounded ONLY in real experience from config/resume.md. If a question targets something the candidate hasn't done directly, translate the closest adjacent experience honestly and signal what they'd ramp on first. Never fabricate.
+- **Q1** (hardest — usually the most-cited "must have"): *Why it matters:* one line. *STAR:* Situation (real context from a role in resume.md) / Task / Action (language from a real bullet) / Result (the measured outcome from the source bullet).
+- **Q2** (a JD differentiator or domain challenge): *Why it matters* + *STAR* as above.
+- **Q3** (often a stretch area or honest gap): *Why it matters* + *STAR* — direct experience if it exists; otherwise translate the closest adjacent experience and name the ramp.
+
+**Questions for the candidate to ask** — two sets:
+- For the recruiter: new role vs. backfill, interview process and timeline, work model, budgeted range, how the company thinks about the role's focus area.
+- For the hiring manager: how they define success for this role, how the work splits across teams, what the hard problems are, what the first 90 days look like.
+
+**Compensation strategy** — using the comp benchmark from the Company Snapshot: state a defensible target band for this title at this company; coach the get-their-range-first move (ask whether they have a budgeted band before naming a number); give a fallback line if pushed to name a number first, anchored in the upper half of the benchmark.
+
+**Logistics to confirm** — work model (remote/hybrid/onsite and actual cadence), process and timeline, and why the role is open.
+
+**Night-before checklist** — 5–7 concrete items: re-read the JD and the clear-the-bar facts, lock the one-liner, decide the comp band and opening line, have two current company facts ready, pick the questions to ask, and a setup check (quiet room, headset, resume and notes open).
 ```
 
 Then append the complete JD under `## Full Job Description`, and update the pipeline grade.

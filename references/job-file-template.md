@@ -40,8 +40,10 @@ tailoring rely on. If only part of the posting could be retrieved, save everythi
 you have and add a line: "JD incomplete — paste the full text to improve scoring."]
 
 ## Evaluation
-[Filled by js-evaluate — score table, recommendation, Top 5 Missing Keywords,
-director-written key requirements, hiring-manager Q&A.]
+[Filled by js-evaluate — score table, recommendation, the web-verified Company
+Snapshot, Top 5 Missing Keywords, director-written key requirements, and the
+Interview Prep pack (recruiter screen, one-liner, hiring-manager technical Q&A,
+questions to ask, comp strategy, logistics, night-before checklist).]
 
 ## Tailored Resume
 <!-- RESUME:START -->
