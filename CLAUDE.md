@@ -1,5 +1,15 @@
 # Job Search & Resume Assistant — Engine
 
+> ## 📦 Nickname: **"Product"** (job-search-assistant)
+> This is **the product being built here** — a reusable, multi-user-ready, web-search
+> based job-search assistant intended to ship. It is NOT the daily driver. Its sibling,
+> **"Daily Driver"** (`job-search-agent`), is the maintainer's personal portal-scraper
+> that sends the 6 AM morning digest and is a SEPARATE system with its OWN `pipeline.md`
+> — the two never share data. When in doubt: *the morning briefing does NOT come from
+> here.*
+> _Naming is a working label only; folders will be physically renamed later once this
+> Product's name is solidified._
+
 A reusable, multi-user-ready job search assistant. It interviews the user about
 their next role, reviews their master resume, finds and qualifies jobs, and tailors
 a resume + cover letter per job — never auto-applying, never fabricating.
