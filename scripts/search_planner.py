@@ -253,7 +253,6 @@ def _main(argv: list[str]) -> int:
     profile_path = _resolve_profile_path(args.profile)
     profile = load_profile(profile_path)
 
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
     import career_profile_qa
     import workspace
     career_path = Path(args.career_profile).expanduser() if args.career_profile \

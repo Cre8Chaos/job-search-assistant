@@ -45,7 +45,8 @@ first-class path and the most reliable.
    - The planner also appends `adjacent_titles` from `config/career-profile.yaml`
      when a real one exists (run the `js-assess` skill to create it). They fill
      remaining keyword budget — the ~15–20 searches/run cap is unchanged. A
-     `warning:` line on stderr means the career profile was unreadable and was
+     `warning:` line on stderr means the career profile couldn't supply adjacent
+     titles (unreadable, malformed, or missing/empty `adjacent_titles`) and was
      skipped; surface that to the user once, then proceed normally.
    - Collect candidate posting URLs from the results.
 
