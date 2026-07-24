@@ -47,6 +47,14 @@ def run_qa(workspace, job=None, mode="tailored"):
     return subprocess.run(cmd, env=env, capture_output=True, text=True)
 
 
+def run_cp_qa(workspace_dir, profile=None):
+    env = dict(os.environ, JOB_SEARCH_WORKSPACE=str(workspace_dir))
+    cmd = [sys.executable, str(SCRIPTS / "career_profile_qa.py")]
+    if profile:
+        cmd += ["--profile", str(profile)]
+    return subprocess.run(cmd, env=env, capture_output=True, text=True)
+
+
 PROFILE = """target_roles:
   - Senior Product Manager
 search_keywords:
@@ -146,6 +154,33 @@ BS Computer Science, City College
 
 ## Certifications
 Certified Scrum Master (CSM)
+"""
+
+VALID_CAREER = """version: 1
+assessed: "2026-07-23"
+history:
+  - "2026-07-23"
+strengths:
+  systems-thinking: "Mapped the whole claims intake flow before rebuilding it"
+work_style:
+  autonomy: high
+  depth_vs_breadth: breadth
+  collaboration: cross-functional
+motivators:
+  - mastery
+  - income
+transferable_skills:
+  stakeholder management: "insurance product delivery"
+risk:
+  appetite: medium
+adjacent_titles:
+  - "Solutions Consultant"
+  - "Technical Program Manager"
+trajectory_signals:
+  moving_toward:
+    - "AI-adjacent delivery leadership"
+  moving_away_from:
+    - "pure people management"
 """
 
 
@@ -297,6 +332,54 @@ def main():
     test("search_planner adds visa-sponsorship intent only when needed",
          lambda: (all("visa sponsorship" not in q.query for q in q1) and
                   any("visa sponsorship" in q.query for q in sponsored), None))
+
+    # career profile: strict validator gate + soft consumption
+    import career_profile_qa
+    with tempfile.TemporaryDirectory() as tmp2:
+        ws2 = Path(tmp2) / "ws"
+        env2 = dict(os.environ, JOB_SEARCH_WORKSPACE=str(ws2))
+        subprocess.run([sys.executable, str(SCRIPTS / "workspace.py"), "ensure"],
+                       env=env2, capture_output=True, text=True)
+        cp = ws2 / "config" / "career-profile.yaml"
+
+        r_ph = run_cp_qa(ws2)
+        test("career QA exits 2 on a placeholder profile",
+             lambda: (r_ph.returncode == 2, f"exit={r_ph.returncode}"))
+
+        cp.write_text(VALID_CAREER, encoding="utf-8")
+        r_ok = run_cp_qa(ws2)
+        test("career QA passes a valid profile (exit 0)",
+             lambda: (r_ok.returncode == 0, f"exit={r_ok.returncode}\n{r_ok.stdout}"))
+
+        cp.write_text(VALID_CAREER.replace("- mastery", "- fame"), encoding="utf-8")
+        r_voc = run_cp_qa(ws2)
+        test("career QA blocks an unknown motivator (exit 1)",
+             lambda: (r_voc.returncode == 1, f"exit={r_voc.returncode}"))
+
+        cp.write_text(VALID_CAREER.replace("autonomy: high", "autonomy: extreme"),
+                      encoding="utf-8")
+        r_enum = run_cp_qa(ws2)
+        test("career QA blocks an invalid work_style enum (exit 1)",
+             lambda: (r_enum.returncode == 1, f"exit={r_enum.returncode}"))
+
+        cp.write_text("version: 1\n", encoding="utf-8")
+        r_missing = run_cp_qa(ws2)
+        test("career QA blocks missing required keys (exit 1)",
+             lambda: (r_missing.returncode == 1, f"exit={r_missing.returncode}"))
+
+        # soft consumption — must never raise, never block the pipeline
+        cp.write_text(VALID_CAREER, encoding="utf-8")
+        t_ok, w_ok = career_profile_qa.consume_adjacent_titles(cp)
+        test("consume_adjacent_titles returns titles from a valid profile",
+             lambda: (t_ok == ["Solutions Consultant", "Technical Program Manager"]
+                      and w_ok is None, str((t_ok, w_ok))))
+        cp.write_text("adjacent_titles: {}\n", encoding="utf-8")
+        t_bad, w_bad = career_profile_qa.consume_adjacent_titles(cp)
+        test("consume_adjacent_titles degrades to [] + warning on a bad profile",
+             lambda: (t_bad == [] and w_bad is not None, str((t_bad, w_bad))))
+        t_no, w_no = career_profile_qa.consume_adjacent_titles(ws2 / "config" / "nope.yaml")
+        test("consume_adjacent_titles is a clean no-op when the file is missing",
+             lambda: (t_no == [] and w_no is None, None))
 
     # no-personal-data audit of the engine. The shippable engine must contain no
     # real user data, so we scan for generic PII shapes (an email address, an
