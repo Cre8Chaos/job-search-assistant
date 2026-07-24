@@ -23,6 +23,10 @@ result with the QA gate, and optionally renders an ATS PDF. Follow
    reuse the Top 5 Missing Keywords, apply the X-Y-Z formula to bullets using only
    facts/metrics already in the master, reorder for relevance, address director-written
    Key Requirements, and address any Timezone/Travel note in the summary. No fabrication.
+   If the workspace has a real `config/career-profile.yaml`, you may draw
+   phrasing from its strengths evidence for the summary and cover-letter voice —
+   **framing only, never new facts**: every employer, date, metric, and claim
+   must still trace to the master resume (the QA gate enforces this).
 3. **Write the tailored resume** into the job file under `## Tailored Resume`, wrapped
    in the `<!-- RESUME:START -->` / `<!-- RESUME:END -->` markers (required so the QA
    gate and PDF renderer can extract it). Structure per `references/job-file-template.md`.

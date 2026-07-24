@@ -20,6 +20,8 @@ first-class path and the most reliable.
    note `search_keywords`, `location`, `work_model`, `salary`, and
    `work_authorization` (whether `needs_sponsorship` is true — it adjusts steps 3
    and 6; when false/absent, sourcing is unchanged).
+   Also check for a career profile (`career_profile` path): when one exists, the
+   query plan below automatically includes its `adjacent_titles`.
 
 2. **Manual path (preferred when the user has a specific posting):** if the user
    pastes a URL, WebFetch it; if they paste JD text, use it directly. Skip to step 5.
@@ -40,6 +42,11 @@ first-class path and the most reliable.
    - The planner already encodes sponsorship intent (`needs_sponsorship: true` appends
      `visa sponsorship` to queries and you should favor larger/established employers).
      This is best-effort bias, not a guarantee — verify each posting in step 6.
+   - The planner also appends `adjacent_titles` from `config/career-profile.yaml`
+     when a real one exists (run the `js-assess` skill to create it). They fill
+     remaining keyword budget — the ~15–20 searches/run cap is unchanged. A
+     `warning:` line on stderr means the career profile was unreadable and was
+     skipped; surface that to the user once, then proceed normally.
    - Collect candidate posting URLs from the results.
 
 4. **Dedupe** candidates against existing files in the workspace `jobs_dir`

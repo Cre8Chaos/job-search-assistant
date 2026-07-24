@@ -153,6 +153,19 @@ Compare to the user's current level (from `config/resume.md`):
 - 4: Slight title step back, big company/domain upgrade
 - 1–2: Step back in both
 
+**Career-profile signals** *(only when the workspace has a real
+`config/career-profile.yaml` — resolve via `workspace.py paths`; a missing or
+placeholder file means score exactly as above)*: read `trajectory_signals`.
+- The role squarely advances a `moving_toward` direction → score this dimension
+  **no lower than 8**, and name the matching signal in the Reasoning cell.
+- The role centers on a `moving_away_from` direction → score this dimension
+  **no higher than 3**, and name the signal in the Reasoning cell.
+- If the file exists but is malformed, ignore it (score as if absent) and add
+  one line to the evaluation: `Career profile: unreadable — scored without it.`
+
+Weights and grade bands are unchanged — grades stay comparable whether or not a
+career profile exists.
+
 ## Director-Written Bullet Detection (after scoring, before grading)
 Identify JD bullets written specifically for this role (named tools, rare skill
 combinations, language hinting at a past gap, unusually specific).

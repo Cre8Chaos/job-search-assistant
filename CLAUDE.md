@@ -35,6 +35,7 @@ a resume + cover letter per job — never auto-applying, never fabricating.
 | `job-search` | Umbrella router / entry point. Start here. |
 | `js-setup` | First-run intake interview → writes `config/profile.yaml`. |
 | `js-resume-review` | Import + health-check the master resume. |
+| `js-assess` | Optional career assessment → `config/career-profile.yaml` + adjacent-paths report. |
 | `js-find-jobs` | Web-search sourcing → job files in the workspace. |
 | `js-evaluate` | Config-driven A–F scoring of jobs. |
 | `js-tailor` | Tailor resume + cover letter, QA gate, optional ATS PDF. |
@@ -46,6 +47,7 @@ a resume + cover letter per job — never auto-applying, never fabricating.
 | `workspace.py` | The engine↔workspace seam (resolve/ensure/paths/validate). |
 | `pipeline.py` | Add/update rows in the workspace pipeline. |
 | `resume_qa.py` | Zero-dependency resume QA gate (fabrication/ATS/structure/keywords). |
+| `career_profile_qa.py` | QA gate for the optional career profile (strict for js-assess; soft consumer for the planner). |
 | `extract_resume.py` | Extract text from a resume PDF (pdfplumber optional). |
 | `render_pdf.py` | ATS-safe PDF render (Playwright optional; degrades gracefully). |
 | `jobfile.py` | Shared job-file section extractors. |
@@ -63,5 +65,5 @@ Shared rubrics/schemas: `scoring-rubric.md`, `profile-schema.md`, `ats-rules.md`
 - All personal data lives in the workspace, never in this engine.
 
 ## Typical flow
-`job-search` → (first run: `js-setup` → `js-resume-review`) → `js-find-jobs` →
-`js-evaluate` → `js-tailor` (A/B jobs) → `js-pipeline`.
+`job-search` → (first run: `js-setup` → `js-resume-review`) → optional `js-assess` →
+`js-find-jobs` → `js-evaluate` → `js-tailor` (A/B jobs) → `js-pipeline`.

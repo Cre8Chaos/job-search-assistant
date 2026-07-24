@@ -45,6 +45,7 @@ What would you like to do?
   • tailor <file>  — tailor your resume + draft a cover letter         (js-tailor)
   • status         — show your application pipeline                    (js-pipeline)
   • review resume  — re-review or update your master resume            (js-resume-review)
+  • assess         — career assessment → adjacent paths & titles     (js-assess)
   • setup          — redo the intake interview                         (js-setup)
 ```
 
@@ -53,6 +54,7 @@ What would you like to do?
 |---|---|
 | set up / redo interview / change targets | `js-setup` |
 | review / update / import master resume | `js-resume-review` |
+| assess my career / career direction / what else could I do | `js-assess` |
 | find / search for jobs | `js-find-jobs` |
 | evaluate / score / qualify jobs | `js-evaluate` |
 | tailor resume / write cover letter / prep to apply | `js-tailor` |
