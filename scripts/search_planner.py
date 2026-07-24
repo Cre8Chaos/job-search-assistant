@@ -65,6 +65,7 @@ def build_queries(
     *,
     max_keywords: int = MAX_KEYWORDS_DEFAULT,
     boards: tuple[tuple[str, str], ...] = DEFAULT_BOARDS,
+    extra_titles: tuple[str, ...] | list[str] = (),
 ) -> list[SearchQuery]:
     """Build a deterministic, deduped, ordered list of search queries from a profile.
 
@@ -76,7 +77,14 @@ def build_queries(
         raw_keywords = []
     # Coerce to str — a profile may yield a non-string (e.g. an all-digit token
     # parsed as int), and `.strip()` would otherwise crash the whole planner.
-    keywords = [s for s in (str(kw).strip() for kw in raw_keywords) if s][:max_keywords]
+    keywords = [s for s in (str(kw).strip() for kw in raw_keywords) if s]
+    # Adjacent titles (career profile) fill any remaining keyword budget — they
+    # never extend the cap, so the search-count ceiling is unchanged.
+    for title in extra_titles:
+        t = str(title).strip()
+        if t and t not in keywords:
+            keywords.append(t)
+    keywords = keywords[:max_keywords]
 
     location = profile.get("location")
     location = location if isinstance(location, dict) else {}
@@ -237,11 +245,25 @@ def _main(argv: list[str]) -> int:
     parser.add_argument("--profile", help="path to profile.yaml (default: resolved workspace)")
     parser.add_argument("--json", action="store_true", help="emit JSON instead of plain lines")
     parser.add_argument("--max-keywords", type=int, default=MAX_KEYWORDS_DEFAULT)
+    parser.add_argument("--career-profile",
+                        help="path to career-profile.yaml (default: resolved workspace; "
+                             "missing/placeholder is a clean no-op)")
     args = parser.parse_args(argv)
 
     profile_path = _resolve_profile_path(args.profile)
     profile = load_profile(profile_path)
-    queries = build_queries(profile, max_keywords=args.max_keywords)
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import career_profile_qa
+    import workspace
+    career_path = Path(args.career_profile).expanduser() if args.career_profile \
+        else Path(workspace.paths()["career_profile"])
+    extra_titles, warning = career_profile_qa.consume_adjacent_titles(career_path)
+    if warning:
+        print(f"warning: {warning}", file=sys.stderr)
+
+    queries = build_queries(profile, max_keywords=args.max_keywords,
+                            extra_titles=extra_titles)
 
     if args.json:
         print(json.dumps([asdict(q) for q in queries], indent=2))

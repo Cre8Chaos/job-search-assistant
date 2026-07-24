@@ -384,6 +384,23 @@ def main():
         test("consume_adjacent_titles degrades to [] + warning on a non-path input (never raises)",
              lambda: (t_none == [] and w_none is not None, str((t_none, w_none))))
 
+    # planner honors adjacent titles, within the existing keyword cap
+    qx = search_planner.build_queries(planner_profile, extra_titles=["Solutions Consultant"])
+    test("search_planner includes adjacent titles in the plan",
+         lambda: (any(q.keyword == "Solutions Consultant" for q in qx), None))
+    qcap = search_planner.build_queries(
+        {"search_keywords": [f"Role {i}" for i in range(8)], "location": {"remote": True}},
+        extra_titles=["Extra Title"])
+    test("search_planner never exceeds the keyword cap with adjacent titles",
+         lambda: (all(q.keyword != "Extra Title" for q in qcap)
+                  and len({q.keyword for q in qcap}) == 8, None))
+    test("search_planner dedupes an adjacent title already in the keywords",
+         lambda: (len({q.keyword for q in search_planner.build_queries(
+             planner_profile, extra_titles=["Senior Product Manager"])}) == 2, None))
+    test("search_planner without extra titles is byte-identical to before",
+         lambda: ([q.query for q in search_planner.build_queries(planner_profile)] ==
+                  [q.query for q in q1], None))
+
     # no-personal-data audit of the engine. The shippable engine must contain no
     # real user data, so we scan for generic PII shapes (an email address, an
     # absolute home path) rather than any one person's specifics. A private fork
