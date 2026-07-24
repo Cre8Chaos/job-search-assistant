@@ -182,6 +182,12 @@ def main():
                        env=env, capture_output=True, text=True)
         test("workspace ensure creates config/profile.yaml",
              lambda: ((ws / "config" / "profile.yaml").exists(), None))
+        pj = subprocess.run([sys.executable, str(SCRIPTS / "workspace.py"), "paths"],
+                            env=env, capture_output=True, text=True)
+        test("workspace paths exposes career_profile and reports_dir",
+             lambda: ("career_profile" in pj.stdout and "reports_dir" in pj.stdout, None))
+        test("workspace ensure creates the career-profile placeholder",
+             lambda: ((ws / "config" / "career-profile.yaml").exists(), None))
         val = subprocess.run([sys.executable, str(SCRIPTS / "workspace.py"), "validate"],
                              env=env, capture_output=True, text=True)
         test("validate fails on a fresh (placeholder) workspace",

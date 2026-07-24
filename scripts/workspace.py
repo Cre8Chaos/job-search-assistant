@@ -53,10 +53,12 @@ def paths(root: Path | None = None) -> dict:
     return {
         "root": str(root),
         "profile": str(root / "config" / "profile.yaml"),
+        "career_profile": str(root / "config" / "career-profile.yaml"),
         "resume": str(root / "config" / "resume.md"),
         "pipeline": str(root / "data" / "pipeline.md"),
         "jobs_dir": str(root / "data" / "jobs"),
         "pdf_dir": str(root / "output" / "pdfs"),
+        "reports_dir": str(root / "output" / "reports"),
     }
 
 
@@ -69,7 +71,7 @@ def ensure(root: Path | None = None) -> Path:
         shutil.copytree(TEMPLATE_DIR, root)
     else:
         # Backfill any missing canonical dirs without clobbering user data.
-        for sub in ("config", "data/jobs", "output/pdfs"):
+        for sub in ("config", "data/jobs", "output/pdfs", "output/reports"):
             (root / sub).mkdir(parents=True, exist_ok=True)
     return root
 
@@ -82,6 +84,8 @@ def _is_placeholder(path: Path) -> bool:
     return PLACEHOLDER_MARKER in text or not text.strip()
 
 
+# NOTE: config/career-profile.yaml is intentionally NOT validated here — it is
+# optional (js-assess). Consumers treat placeholder/missing as absent.
 def validate(root: Path | None = None) -> tuple[bool, list[str]]:
     """Return (ready, problems). Ready means profile + resume exist and are real."""
     root = root or resolve()

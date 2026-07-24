@@ -71,34 +71,39 @@ confirms rather than re-collects.
 ## Data: `career-profile.yaml`
 
 ```yaml
-version: 1                 # schema version
-assessed: 2026-07-23       # date of this assessment
-history:                   # prior assessment dates (append-only)
-  - 2026-07-23
-strengths:                 # 3-6, each with evidence
-  - name: systems-thinking
-    evidence: "Rebuilt the claims intake flow by mapping..."
+version: 1                       # schema version — must be 1
+assessed: "2026-07-23"           # date of this assessment, quoted YYYY-MM-DD
+history:                         # every assessment date, append-only
+  - "2026-07-23"
+strengths:                       # 3-6 entries: kebab-case name -> one-line evidence story
+  systems-thinking: "Mapped the whole claims intake flow before rebuilding it"
+  cross-team-translation: "Bridged engineering and underwriting on the pricing rollout"
 work_style:
-  autonomy: high           # enum: high | medium | low
-  depth_vs_breadth: breadth
-  collaboration: cross-functional
-motivators:                # ranked list from fixed vocabulary
+  autonomy: high                 # high | medium | low
+  depth_vs_breadth: breadth      # depth | breadth | both
+  collaboration: cross-functional  # solo | small-team | cross-functional
+motivators:                      # ranked, from the fixed vocabulary below
   - mastery
   - income
   - mission
-transferable_skills:
-  - skill: stakeholder management
-    from: "insurance product delivery"
+transferable_skills:             # skill -> where it comes from
+  stakeholder management: "insurance product delivery"
 risk:
-  appetite: medium
+  appetite: medium               # low | medium | high
   notes: "open to Series B+, not pre-seed"
-adjacent_titles:           # feeds search planner; concrete, searchable titles
+adjacent_titles:                 # real, searchable job titles — feeds js-find-jobs
   - "Solutions Consultant"
   - "Technical Program Manager"
-trajectory_signals:        # feeds Career Trajectory scoring guidance
-  moving_toward: ["AI-adjacent delivery leadership"]
-  moving_away_from: ["pure people management"]
+trajectory_signals:              # feeds the Career Trajectory dimension in scoring
+  moving_toward:
+    - "AI-adjacent delivery leadership"
+  moving_away_from:
+    - "pure people management"
 ```
+
+> Shape note (locked at implementation): `strengths` and `transferable_skills` are
+> maps (name → text), not lists of objects, so the file stays inside the engine's
+> no-PyYAML fallback-parser subset. See `references/career-profile-schema.md`.
 
 Enums and the motivator vocabulary are fixed in the schema reference so the validator
 can check them deterministically. Free text is allowed only in `evidence`/`notes`
