@@ -380,6 +380,9 @@ def main():
         t_no, w_no = career_profile_qa.consume_adjacent_titles(ws2 / "config" / "nope.yaml")
         test("consume_adjacent_titles is a clean no-op when the file is missing",
              lambda: (t_no == [] and w_no is None, None))
+        t_none, w_none = career_profile_qa.consume_adjacent_titles(None)
+        test("consume_adjacent_titles degrades to [] + warning on a non-path input (never raises)",
+             lambda: (t_none == [] and w_none is not None, str((t_none, w_none))))
 
     # no-personal-data audit of the engine. The shippable engine must contain no
     # real user data, so we scan for generic PII shapes (an email address, an

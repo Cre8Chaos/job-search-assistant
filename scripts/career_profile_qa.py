@@ -71,8 +71,8 @@ def consume_adjacent_titles(path) -> tuple[list[str], str | None]:
     Malformed file           -> ([], "<warning>"): warn once, proceed as absent.
     A bad career profile must NEVER break sourcing.
     """
-    p = Path(path)
     try:
+        p = Path(path)
         if not p.exists() or workspace._is_placeholder(p):
             return [], None
         prof = search_planner.load_profile(p)
