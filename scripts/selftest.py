@@ -508,6 +508,9 @@ def main():
          lambda: ("and travel %" not in rubric, None))
     test("rubric Output carries the Constraints Gate line and Fit notes block",
          lambda: ("**Constraints Gate:**" in rubric and "**Fit notes**" in rubric, None))
+    test("Constraints Gate scopes 'words without a number' to travel only",
+         lambda: ("For travel, words without a number never produce an F" in gate and
+                  "Words without a number never produce an F" not in gate, None))
 
     # no-personal-data audit of the engine. The shippable engine must contain no
     # real user data, so we scan for generic PII shapes (an email address, an

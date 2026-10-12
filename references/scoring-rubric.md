@@ -74,8 +74,7 @@ Fill `{{MAX_TRAVEL_PCT}}` from `travel.max_pct` and `{{RELOCATION_OK}}` from
 `travel.relocation`. Read the JD body, not the location label (see "Score the JD
 body, never the location label alone").
 
-**No quote, no F.** A conflict needs an exact line from the JD body. Words without a
-number never produce an F.
+**No quote, no F.** A conflict needs an exact line from the JD body. For travel, words without a number never produce an F. Relocation and onsite conflicts are triggered by the phrases listed in checks 2 and 3, and still need the quoted line.
 
 1. **Travel.** A stated percentage above `{{MAX_TRAVEL_PCT}}` is a conflict. For a
    range or an "up to", use the top number: "up to 30%" and "10-30%" both read as 30.
