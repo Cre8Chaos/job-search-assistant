@@ -245,6 +245,33 @@ def main():
         test("validate passes once profile+resume are real",
              lambda: (val2.returncode == 0, f"exit={val2.returncode}"))
 
+        # travel block (assessment v2): absent = valid; malformed = validate exits 1
+        def _validate_with(extra: str):
+            (ws / "config" / "profile.yaml").write_text(PROFILE + extra, encoding="utf-8")
+            return subprocess.run([sys.executable, str(SCRIPTS / "workspace.py"), "validate"],
+                                  env=env, capture_output=True, text=True)
+
+        v_ok = _validate_with("travel:\n  max_pct: 25\n  relocation: false\n")
+        test("validate accepts a well-formed travel block",
+             lambda: (v_ok.returncode == 0, f"exit={v_ok.returncode} {v_ok.stderr}"))
+        v_hi = _validate_with("travel:\n  max_pct: 140\n  relocation: false\n")
+        test("validate rejects travel.max_pct above 100",
+             lambda: (v_hi.returncode == 1 and "max_pct" in v_hi.stderr,
+                      f"exit={v_hi.returncode} {v_hi.stderr}"))
+        v_str = _validate_with('travel:\n  max_pct: "25"\n  relocation: false\n')
+        test("validate rejects a quoted (string) travel.max_pct",
+             lambda: (v_str.returncode == 1 and "max_pct" in v_str.stderr,
+                      f"exit={v_str.returncode} {v_str.stderr}"))
+        v_flt = _validate_with("travel:\n  max_pct: 25.5\n  relocation: false\n")
+        test("validate rejects a non-integer travel.max_pct",
+             lambda: (v_flt.returncode == 1 and "max_pct" in v_flt.stderr,
+                      f"exit={v_flt.returncode} {v_flt.stderr}"))
+        v_rel = _validate_with('travel:\n  max_pct: 25\n  relocation: "no"\n')
+        test("validate rejects a non-boolean travel.relocation",
+             lambda: (v_rel.returncode == 1 and "relocation" in v_rel.stderr,
+                      f"exit={v_rel.returncode} {v_rel.stderr}"))
+        (ws / "config" / "profile.yaml").write_text(PROFILE, encoding="utf-8")  # restore
+
         # clean tailored resume passes
         r_clean = run_qa(ws, clean)
         test("QA passes a faithful tailored resume (exit 0)",

@@ -84,6 +84,22 @@ def _is_placeholder(path: Path) -> bool:
     return PLACEHOLDER_MARKER in text or not text.strip()
 
 
+def travel_problems(profile: dict) -> list[str]:
+    """Problems with an optional travel block. Absent block = no problems."""
+    if not isinstance(profile, dict) or "travel" not in profile:
+        return []
+    travel = profile.get("travel")
+    if not isinstance(travel, dict):
+        return ["travel must be a map with max_pct and relocation"]
+    problems: list[str] = []
+    pct = travel.get("max_pct")
+    if isinstance(pct, bool) or not isinstance(pct, int) or not 0 <= pct <= 100:
+        problems.append(f"travel.max_pct must be an unquoted integer 0-100, got {pct!r}")
+    if not isinstance(travel.get("relocation"), bool):
+        problems.append(f"travel.relocation must be true or false, got {travel.get('relocation')!r}")
+    return problems
+
+
 # NOTE: config/career-profile.yaml is intentionally NOT validated here — it is
 # optional (js-assess). Consumers treat placeholder/missing as absent.
 def validate(root: Path | None = None) -> tuple[bool, list[str]]:
@@ -94,8 +110,15 @@ def validate(root: Path | None = None) -> tuple[bool, list[str]]:
     if not root.exists():
         problems.append(f"workspace does not exist: {root}")
         return False, problems
-    if _is_placeholder(Path(p["profile"])):
+    profile_path = Path(p["profile"])
+    if _is_placeholder(profile_path):
         problems.append("profile.yaml missing or still a placeholder — run setup interview")
+    else:
+        import search_planner  # local import: keeps workspace.py import-light
+        try:
+            problems.extend(travel_problems(search_planner.load_profile(profile_path)))
+        except Exception as ex:
+            problems.append(f"profile.yaml unreadable ({ex})")
     if _is_placeholder(Path(p["resume"])):
         problems.append("resume.md missing or still a placeholder — run resume review")
     return (len(problems) == 0), problems
