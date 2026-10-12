@@ -492,6 +492,23 @@ def main():
          lambda: ([q.query for q in search_planner.build_queries(planner_profile)] ==
                   [q.query for q in q1], None))
 
+    rubric = (ENGINE / "references" / "scoring-rubric.md").read_text(encoding="utf-8")
+    gate = rubric.split("## Constraints Gate", 1)[1].split("\n## ", 1)[0] \
+        if "## Constraints Gate" in rubric else ""
+    test("rubric has a Constraints Gate section",
+         lambda: (bool(gate), None))
+    test("Constraints Gate states 'No quote, no F'",
+         lambda: ("No quote, no F" in gate, None))
+    test("Constraints Gate has travel, relocation and onsite-outside-radius checks",
+         lambda: (all(s in gate for s in ("1. **Travel.**", "2. **Relocation.**",
+                                          "3. **Onsite outside the radius.**")), None))
+    test("Constraints Gate is dormant without a travel block",
+         lambda: ("dormant" in gate and "travel" in gate, None))
+    test("old 'note only ... travel %' instruction is gone from Remote/Location",
+         lambda: ("and travel %" not in rubric, None))
+    test("rubric Output carries the Constraints Gate line and Fit notes block",
+         lambda: ("**Constraints Gate:**" in rubric and "**Fit notes**" in rubric, None))
+
     # no-personal-data audit of the engine. The shippable engine must contain no
     # real user data, so we scan for generic PII shapes (an email address, an
     # absolute home path) rather than any one person's specifics. A private fork

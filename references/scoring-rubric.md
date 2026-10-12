@@ -8,7 +8,7 @@ first, then apply the rubric.
 Tokens used below (fill from profile):
 `{{TARGET_ROLES}}`, `{{SALARY_MIN}}`, `{{SALARY_TARGET}}`, `{{SALARY_MAX}}`,
 `{{CURRENCY}}`, `{{LOCATION}}`, `{{RADIUS_MILES}}`, `{{REMOTE_OK}}`,
-`{{PREFERRED_DOMAINS}}`, `{{AVOIDED_DOMAINS}}`, `{{NEEDS_SPONSORSHIP}}`, and the six
+`{{PREFERRED_DOMAINS}}`, `{{AVOIDED_DOMAINS}}`, `{{NEEDS_SPONSORSHIP}}`, `{{MAX_TRAVEL_PCT}}`, `{{RELOCATION_OK}}`, and the six
 `{{WEIGHT_*}}` values.
 
 ## Domain-Expertise Gate (run BEFORE scoring)
@@ -64,6 +64,49 @@ absent.** When the user needs sponsorship, scan the JD for the employer's stance
   with the normal rubric** below.
 - **Silent** (no sponsorship language): record
   `Sponsorship: not stated — confirm with recruiter` and **proceed normally**.
+
+## Constraints Gate (run BEFORE scoring, only if `profile.yaml` has a `travel` block)
+
+**When `travel` is absent, the whole gate is dormant.** Write
+`**Constraints Gate:** dormant (no travel block in profile.yaml)` and continue.
+
+Fill `{{MAX_TRAVEL_PCT}}` from `travel.max_pct` and `{{RELOCATION_OK}}` from
+`travel.relocation`. Read the JD body, not the location label (see "Score the JD
+body, never the location label alone").
+
+**No quote, no F.** A conflict needs an exact line from the JD body. Words without a
+number never produce an F.
+
+1. **Travel.** A stated percentage above `{{MAX_TRAVEL_PCT}}` is a conflict. For a
+   range or an "up to", use the top number: "up to 30%" and "10-30%" both read as 30.
+   A figure equal to the cutoff passes.
+2. **Relocation.** When `{{RELOCATION_OK}}` is false: "must relocate", "relocation
+   required", or "must be based in <city>" for a city outside `{{RADIUS_MILES}}` mi of
+   `{{LOCATION}}` is a conflict. "Relocation assistance available" is not.
+3. **Onsite outside the radius.** An explicit requirement to work from an office
+   beyond `{{RADIUS_MILES}}` mi of `{{LOCATION}}` (days per week, "onsite",
+   "in-office", "standard office environment") is a conflict.
+
+**On a conflict:**
+1. **Cap the grade at F** regardless of other dimensions, and skip the full rubric.
+2. Write to the job file's `## Evaluation`:
+
+  ```
+  ## Evaluation
+
+  **Grade: F (Constraint Conflict)**
+
+  **Constraints Gate:** CONFLICT → F: "[exact JD text]" ([travel | relocation | onsite outside radius])
+  **Recommendation:** Skip. Do not tailor a resume for this role.
+  ```
+
+3. Update the pipeline grade/status (see Output). Do not pass the job to js-tailor.
+
+**Otherwise** write one of these and proceed with the normal rubric:
+- `**Constraints Gate:** PASS`
+- `**Constraints Gate:** CHECK: [what is unstated or vague]` for silence or wording
+  without a number ("travel as required", "frequent travel", "embedded with client
+  teams", `#LI-HYBRID`). No penalty.
 
 ## Company Intelligence (live, verified — run BEFORE scoring Salary & Stability)
 
@@ -126,8 +169,9 @@ Score against the user's band (`{{SALARY_MIN}}`–`{{SALARY_MAX}}` `{{CURRENCY}}
 - 7: Hybrid AND office within `{{RADIUS_MILES}}` mi of `{{LOCATION}}`
 - 4: Onsite within `{{RADIUS_MILES}}` mi of `{{LOCATION}}`
 - 0: Requires relocation / outside radius
-- **Note only (no score change):** required working hours/timezone and travel %.
-  Capture them in the output so tailoring can address them.
+- **Note only (no score change):** required working hours/timezone. Capture them in
+  the output so tailoring can address them. Travel is not scored here: the
+  Constraints Gate (above) decides it.
 
 #### Score the JD body, never the location label alone
 
@@ -246,10 +290,16 @@ Final = Σ(score × weight / 10).
 - Any fact that could not be confirmed is labeled "unverified."
 
 **Sponsorship:** [only when the user needs sponsorship — one of: refused | offered | not stated — confirm with recruiter]
+**Constraints Gate:** [PASS | CHECK: … | dormant (no travel block in profile.yaml)]
 **Timezone/Travel:** [e.g. "EST hours required", "up to 10% travel", or "Not specified"]
 **Top 5 Missing Keywords:** keyword1, keyword2, keyword3, keyword4, keyword5
 **Key Requirements (director-written):** [if any]
 **Grade Adjustment:** [if any]
+
+**Fit notes** *(never changes the grade; skip with "Fit notes: skipped, no career profile" when there is none)*
+- Why it fits (up to 2): "[JD quote]" ↔ [motivators | work_style | energizers | transferable_skills]: [value]
+- Watch out (up to 2, PRIVATE): "[JD quote]" ↔ [drains | weaknesses | work_style]: [value]. Ask: [one interview question]
+- A line without both a JD quote and a field name is not written. If no line qualifies: "no JD line matched a profile field".
 
 ---
 
