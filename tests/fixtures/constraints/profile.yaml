@@ -1,0 +1,14 @@
+target_roles:
+  - Senior Product Manager
+location:
+  city: "Springfield"
+  state: "IL"
+  zip: ""
+  radius_miles: 35
+  remote: true
+work_model:
+  - remote
+  - hybrid
+travel:
+  max_pct: 25
+  relocation: false
