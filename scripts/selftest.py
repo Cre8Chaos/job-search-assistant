@@ -520,6 +520,8 @@ def main():
          lambda: ("Constraints Gate" in sk["js-evaluate"] and "Fit notes" in sk["js-evaluate"], None))
     test("js-tailor never reads drains, weaknesses or interests",
          lambda: ("Never read `drains`, `weaknesses`, or `interests`" in sk["js-tailor"], None))
+    test("js-tailor skips the private Fit notes and Interview Prep in ## Evaluation",
+         lambda: ("Skip the **Fit notes**" in sk["js-tailor"] and "**Interview Prep** pack inside `## Evaluation`" in sk["js-tailor"], None))
     test("js-find-jobs pre-filter mirrors the Constraints Gate",
          lambda: ("constraints: conflict" in sk["js-find-jobs"], None))
     test("js-setup asks the travel question",

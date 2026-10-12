@@ -18,7 +18,9 @@ result with the QA gate, and optionally renders an ATS PDF. Follow
    Domain-Expertise Mismatch, STOP and tell the user the grade — do not tailor.
 1. **Read inputs** (paths via `python scripts/workspace.py paths`): full
    `config/resume.md`; the job file's `## Full Job Description` and `## Evaluation`
-   (including its Top 5 Missing Keywords and Key Requirements).
+   (including its Top 5 Missing Keywords and Key Requirements). Skip the **Fit notes**
+   block and the **Interview Prep** pack inside `## Evaluation`: they hold PRIVATE
+   career-profile text and are not tailoring inputs.
 2. **Tailor the resume** per `references/ats-rules.md`: extract 15–20 ATS keywords,
    reuse the Top 5 Missing Keywords, apply the X-Y-Z formula to bullets using only
    facts/metrics already in the master, reorder for relevance, address director-written
