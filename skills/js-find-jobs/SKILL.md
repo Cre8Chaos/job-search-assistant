@@ -62,6 +62,12 @@ first-class path and the most reliable.
 
 6. **Coarse pre-filter** using the profile: title fuzzy-match, location/remote fit,
    salary floor (missing salary is OK — handled during scoring).
+   - **Location fit is decided by the JD body, not the location label.** A
+     metro-anchored `(Remote)` label, a bare `United States`, and a `4 Locations`
+     placeholder all confirm nothing on their own. Keep such a role and let scoring
+     judge it, but never pre-filter it IN as "remote" on the label alone — see
+     `references/scoring-rubric.md` → "Score the JD body, never the location label
+     alone" for the exact caps. This gate is coarse: when unsure, keep and flag.
    - **If `needs_sponsorship` is true:** scan each JD for explicit refusal language
      ("no visa sponsorship", "must be authorized without sponsorship", "US citizens/GC
      holders only"). Drop those, or keep them clearly flagged `sponsorship: refused`.

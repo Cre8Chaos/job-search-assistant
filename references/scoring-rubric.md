@@ -129,6 +129,41 @@ Score against the user's band (`{{SALARY_MIN}}`–`{{SALARY_MAX}}` `{{CURRENCY}}
 - **Note only (no score change):** required working hours/timezone and travel %.
   Capture them in the output so tailoring can address them.
 
+#### Score the JD body, never the location label alone
+
+A location string is formatting written by an applicant tracking system. It is not
+a statement of work model, and several very common labels mean the opposite of how
+they read. Never infer remote from a label:
+
+- **A metro-anchored "(Remote)" label caps at 4, not 10.** `New York City Office
+  (Remote)`, `San Francisco (Remote)`, `Remote - Chicago, IL`. These name a hub
+  office *and* say remote, which at many employers means remote anchored to that
+  hub, i.e. hybrid. Score 10 only when the JD body itself says fully remote / 100%
+  remote / remote-first / work from anywhere. If the body is silent, score 4 and
+  write "remote unconfirmed — hub-anchored label, JD silent" in the Notes column.
+  **Do not pass it to `js-tailor`** until the user confirms.
+  - Exception: employers who are genuinely remote-first use this shape for a
+    pay-band anchor. Treat it as remote only with evidence from the JD or the
+    careers page, recorded in the Company Snapshot. Company reputation is not
+    evidence.
+- **A bare country or nationwide token is not remote.** `United States`, `USA`,
+  `US`, or blank is what an ATS shows for hybrid and onsite roles too. Cap at 6
+  unless the JD body confirms remote.
+- **A hybrid or onsite `work_model` signal beats any remote wording in the
+  location.** Cap at 0 unless the office is within `{{RADIUS_MILES}}` mi of
+  `{{LOCATION}}`. If that signal came from a loose keyword scan and the body has no
+  real hybrid/onsite requirement, say so in the Notes column rather than quietly
+  scoring around it.
+- **A multi-office placeholder (`4 Locations`, `See posting`) is not a location.**
+  Read the offices out of the posting itself. If none is within
+  `{{RADIUS_MILES}}` mi of `{{LOCATION}}` and the JD does not say remote, score 0.
+
+> Why this section exists: two roles once scored **10/10, "Explicitly states
+> '<Metro> Office (Remote)' — fully remote"**. Neither job description used the word
+> remote anywhere, and both turned out to be hybrid roles in that metro. The label
+> was the only evidence and it was treated as proof. A tailored resume and an
+> application went out before anyone checked. Absence of evidence is not evidence.
+
 ### 4. Tech & Domain Alignment — weight `{{WEIGHT_TECH}}`%
 Score how well the role's domain/tech matches `{{PREFERRED_DOMAINS}}` (and is not in `{{AVOIDED_DOMAINS}}`):
 - 10: Squarely in a preferred domain / tech focus
