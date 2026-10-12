@@ -394,6 +394,27 @@ def main():
         test("career QA blocks missing required keys (exit 1)",
              lambda: (r_missing.returncode == 1, f"exit={r_missing.returncode}"))
 
+        V2_KEYS = ('energizers:\n  - "untangling a messy process"\n'
+                   'drains:\n  - "long stretches of status reporting"\n'
+                   'weaknesses:\n  over-scoping: "says yes to too much at the start"\n'
+                   'interests:\n  - "trail running"\n')
+        cp.write_text(VALID_CAREER + V2_KEYS, encoding="utf-8")
+        r_v2 = run_cp_qa(ws2)
+        test("career QA passes a profile with all four v2 keys (exit 0)",
+             lambda: (r_v2.returncode == 0 and r_v2.stdout.count("[PASS] New key") == 4,
+                      f"exit={r_v2.returncode}\n{r_v2.stdout}"))
+        cp.write_text(VALID_CAREER + 'drains: "not a list"\nweaknesses:\n  BadName: ""\n',
+                      encoding="utf-8")
+        r_v2bad = run_cp_qa(ws2)
+        test("career QA only WARNS on malformed v2 keys (exit 0, 2 warnings)",
+             lambda: (r_v2bad.returncode == 0 and r_v2bad.stdout.count("[warn] New key") == 2,
+                      f"exit={r_v2bad.returncode}\n{r_v2bad.stdout}"))
+        cp.write_text(VALID_CAREER, encoding="utf-8")
+        r_v1 = run_cp_qa(ws2)
+        test("career QA treats absent v2 keys as fine (v1 profile unchanged)",
+             lambda: (r_v1.returncode == 0 and "[warn] New key" not in r_v1.stdout,
+                      f"exit={r_v1.returncode}\n{r_v1.stdout}"))
+
         # soft consumption — must never raise, never block the pipeline
         cp.write_text(VALID_CAREER, encoding="utf-8")
         t_ok, w_ok = career_profile_qa.consume_adjacent_titles(cp)

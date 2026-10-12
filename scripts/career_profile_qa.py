@@ -42,6 +42,7 @@ MOTIVATOR_VOCAB = {"mastery", "income", "mission", "autonomy",
                    "status", "stability", "impact", "learning"}
 RISK_APPETITES = {"low", "medium", "high"}
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+KEBAB_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 STALE_DAYS = 365
 
 _results = []
@@ -165,6 +166,29 @@ def check_blocking(profile: dict):
 # ─── Advisory checks (WARN-only) ───────────────────────────────────────────────
 
 def check_advisory(profile: dict):
+    def string_list(key):
+        def check():
+            if key not in profile:
+                return True, f"{key} not set (optional)"
+            val = profile.get(key)
+            if not isinstance(val, list) or not all(str(v or "").strip() for v in val):
+                return False, f"{key} should be a list of non-empty strings"
+            return True, f"{len(val)} entr(y/ies)"
+        return check
+
+    def weaknesses_map():
+        if "weaknesses" not in profile:
+            return True, "weaknesses not set (optional)"
+        val = profile.get("weaknesses")
+        if not isinstance(val, dict):
+            return False, "weaknesses should be a map: kebab-case name -> description"
+        bad = [k for k, v in val.items()
+               if not KEBAB_RE.match(str(k)) or not str(v or "").strip()]
+        if bad:
+            return False, ("weakness(es) need a kebab-case name and a description: "
+                           + ", ".join(map(str, bad)))
+        return True, f"{len(val)} weakness(es)"
+
     def strengths_evidence():
         strengths = profile.get("strengths")
         if not isinstance(strengths, dict) or not strengths:
@@ -191,6 +215,11 @@ def check_advisory(profile: dict):
             return False, f"assessment is {age} days old — consider re-running js-assess"
         return True, f"{age} day(s) old"
 
+    test("New key energizers is a string list", string_list("energizers"), blocking=False)
+    test("New key drains is a string list (PRIVATE)", string_list("drains"), blocking=False)
+    test("New key weaknesses is a kebab-name map (PRIVATE)", weaknesses_map, blocking=False)
+    test("New key interests is a string list (context only)", string_list("interests"),
+         blocking=False)
     test("Strengths carry evidence stories", strengths_evidence, blocking=False)
     test("risk.appetite uses a known value", risk_enum, blocking=False)
     test("Assessment is fresh (<= 12 months)", freshness, blocking=False)
