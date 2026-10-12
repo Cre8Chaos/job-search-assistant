@@ -12,6 +12,8 @@ the motivator vocabulary are fixed in `references/career-profile-schema.md`.
   even when it goes well?"
 - Synthesize 3–6 kebab-case strengths, each with a one-line evidence story taken
   from their answer (their words, compressed).
+- Also capture `energizers` (what gives you energy) and `drains` (what takes it
+  away, PRIVATE).
 
 ## Round 2 — Work-style → `work_style`
 - "Describe the best-run team or project you've been part of. What made it work
@@ -37,6 +39,8 @@ the motivator vocabulary are fixed in `references/career-profile-schema.md`.
 - Set `appetite` (low/medium/high) + a notes line. Cross-check hard constraints
   against `config/profile.yaml` — this round does not replace intake; flag any
   contradiction to the user rather than silently overwriting either file.
+- Also capture one or two `weaknesses` as kebab-name → description (PRIVATE), and
+  route hard constraints to `profile.yaml`'s `travel` block, not `risk.notes`.
 
 ## Round 6 — Growth direction → `trajectory_signals` + `adjacent_titles`
 - "Three years from now, what are you doing more of — and what have you managed
@@ -45,3 +49,4 @@ the motivator vocabulary are fixed in `references/career-profile-schema.md`.
   `adjacent_titles`: REAL, searchable job titles the user likely hasn't been
   searching, each justified by a strength or signal from earlier rounds.
   Confirm the title list explicitly — these directly widen job sourcing.
+- Optionally capture `interests` outside work (context only).

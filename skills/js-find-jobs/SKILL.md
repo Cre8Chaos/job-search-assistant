@@ -68,6 +68,9 @@ first-class path and the most reliable.
      judge it, but never pre-filter it IN as "remote" on the label alone — see
      `references/scoring-rubric.md` → "Score the JD body, never the location label
      alone" for the exact caps. This gate is coarse: when unsure, keep and flag.
+   - **If `profile.yaml` has a `travel` block:** apply the Constraints Gate's three
+     checks (`references/scoring-rubric.md`). Drop a role with a quoted explicit
+     conflict, or keep it flagged `constraints: conflict`. When unsure, keep and flag.
    - **If `needs_sponsorship` is true:** scan each JD for explicit refusal language
      ("no visa sponsorship", "must be authorized without sponsorship", "US citizens/GC
      holders only"). Drop those, or keep them clearly flagged `sponsorship: refused`.

@@ -22,7 +22,8 @@ Ask together:
 - Acceptable work models? (remote / hybrid / onsite — multi-select)
 - Home city/state (and ZIP if they want onsite/hybrid scored by distance)
 - Acceptable commute radius in miles (default 25)
-Set `location.*` and `work_model`. If they only want remote, location may be blank.
+- Most travel you will accept, as a percentage, and would you relocate? (optional)
+Set `location.*`, `work_model`, and (if answered) `travel.max_pct` / `travel.relocation`. If they only want remote, location may be blank.
 
 ## Round 3 — Work authorization
 Ask (AskUserQuestion, single choice): "Are you legally authorized to work in your

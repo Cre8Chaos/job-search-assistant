@@ -24,7 +24,9 @@ for filtering and scoring. Follow the interview script in
 2. **Run the six intake rounds** from `references/intake-questions.md`, in order:
    1. Target roles — propose normalized titles + search keywords, then
       **explicitly confirm the title list with the user before writing anything.**
-   2. Location & work model.
+   2. Location & work model, plus travel and relocation → `travel.max_pct` (an integer
+      percentage, e.g. 25) and `travel.relocation` (true/false). If the user skips it,
+      omit the `travel` block (the Constraints Gate stays dormant).
    3. Work authorization → `work_authorization.needs_sponsorship` (default false).
    4. Compensation.
    5. What matters most → 1–5 importance ratings → **normalize to scoring_weights
@@ -34,7 +36,8 @@ for filtering and scoring. Follow the interview script in
      parts; plain prompts for open-ended parts.
 3. **Write `config/profile.yaml`** at the resolved profile path, matching
    `references/profile-schema.md`. Double-check `scoring_weights` sums to 100, and
-   include the `work_authorization` block (default `needs_sponsorship: false`).
+   include the `work_authorization` block (default `needs_sponsorship: false`)
+   and the `travel` block when the user gave one.
 4. **Confirm** a short summary of the saved profile to the user (include whether
    they need visa sponsorship, so the gate behavior is explicit).
 5. **Hand off** to the `js-resume-review` skill to import and review their master

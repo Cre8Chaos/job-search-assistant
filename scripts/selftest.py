@@ -512,6 +512,25 @@ def main():
          lambda: ("For travel, words without a number never produce an F" in gate and
                   "Words without a number never produce an F" not in gate, None))
 
+    sk = {n: (ENGINE / "skills" / n / "SKILL.md").read_text(encoding="utf-8")
+          for n in ("js-evaluate", "js-tailor", "js-find-jobs", "js-setup", "js-assess")}
+    cps = (ENGINE / "references" / "career-profile-schema.md").read_text(encoding="utf-8")
+    pfs = (ENGINE / "references" / "profile-schema.md").read_text(encoding="utf-8")
+    test("js-evaluate runs the Constraints Gate and writes Fit notes",
+         lambda: ("Constraints Gate" in sk["js-evaluate"] and "Fit notes" in sk["js-evaluate"], None))
+    test("js-tailor never reads drains, weaknesses or interests",
+         lambda: ("Never read `drains`, `weaknesses`, or `interests`" in sk["js-tailor"], None))
+    test("js-find-jobs pre-filter mirrors the Constraints Gate",
+         lambda: ("constraints: conflict" in sk["js-find-jobs"], None))
+    test("js-setup asks the travel question",
+         lambda: ("travel.max_pct" in sk["js-setup"], None))
+    test("js-assess writes the four v2 keys",
+         lambda: (all(k in sk["js-assess"] for k in ("energizers", "drains", "weaknesses", "interests")), None))
+    test("every schema row names its reader (Read by column)",
+         lambda: ("| Read by |" in cps and "| Read by |" in pfs, None))
+    test("schema marks drains and weaknesses PRIVATE",
+         lambda: (cps.count("PRIVATE") >= 2, None))
+
     # no-personal-data audit of the engine. The shippable engine must contain no
     # real user data, so we scan for generic PII shapes (an email address, an
     # absolute home path) rather than any one person's specifics. A private fork

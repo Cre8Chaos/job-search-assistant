@@ -31,6 +31,8 @@ Run evaluations without pausing for confirmation. Apply the rubric mechanically:
 1. **Read inputs** (paths via `python scripts/workspace.py paths`):
    `config/profile.yaml` (weights + thresholds) and `config/resume.md` (for the
    career-trajectory and domain-gate comparison). Read `references/scoring-rubric.md`.
+   Also read `config/career-profile.yaml` if present (optional; a missing or
+   placeholder file means Fit notes are skipped).
 2. **Domain-Expertise Gate first:** if the JD hard-requires expertise absent from
    the resume / listed in `domain.dealbreakers`, cap at D, skip the rubric, write the
    mismatch note, update the grade, and move on.
@@ -39,6 +41,12 @@ Run evaluations without pausing for confirmation. Apply the rubric mechanically:
    sponsorship, **cap at F**, write the "No Visa Sponsorship" note quoting the exact
    text, set `Sponsorship: refused`, update grade/status, and move on. If it explicitly
    offers sponsorship record `offered`; if silent record `not stated`, then continue.
+3.2. **Constraints Gate** (only if `profile.yaml` has a `travel` block; otherwise write
+   `**Constraints Gate:** dormant (no travel block in profile.yaml)`): per
+   `references/scoring-rubric.md` → "Constraints Gate". A travel figure above
+   `travel.max_pct`, a relocation requirement when `travel.relocation` is false, or an
+   explicit onsite requirement outside the radius **caps at F**, quoting the exact JD
+   line. No quote, no F. Silence or vague wording is `CHECK: ...` with no penalty.
 3.5. **Company intelligence (live, verified):** before scoring Salary and Stability,
    run targeted web searches to confirm ownership/structure, funding/valuation,
    headcount, HQ, recent developments, culture, and a comp benchmark — per
@@ -56,7 +64,11 @@ Run evaluations without pausing for confirmation. Apply the rubric mechanically:
    Grade Adjustment, and the full **Interview Prep** pack — recruiter screen, one-line
    positioning, hiring-manager technical Q&A, questions to ask, comp strategy,
    logistics, night-before checklist — grounded in the resume and the Company
-   Snapshot). **Preserve the `## Full Job Description` section in full** — if the
+   Snapshot). Also include the `**Constraints Gate:**` line, and the **Fit notes**
+   block (Why it fits / Watch out, each line pairing a JD quote with a named
+   career-profile field). Add each Watch-out question to Interview Prep's questions
+   to ask. `drains` and `weaknesses` appear ONLY in Fit notes and Interview Prep.
+   **Preserve the `## Full Job Description` section in full** — if the
    complete JD verbatim isn't already there, add it; never replace it with a summary.
 7. **Update the pipeline grade/status:**
    ```bash

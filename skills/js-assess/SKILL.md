@@ -27,7 +27,9 @@ script: `references/assessment-questions.md`. Schema + fixed enums:
    - **Exists → re-assessment mode:** read it, run an abbreviated interview
      focused on what changed since `assessed`, then present a field-level diff
      (old → new) and get explicit approval before writing. Append today's date
-     to `history` — never drop prior dates.
+     to `history` — never drop prior dates. If `risk.notes` holds hard constraints
+     (travel, relocation, commute), propose moving them to `profile.yaml`'s `travel`
+     block one line at a time, and write only what the user approves.
    - **Absent/placeholder → full interview.**
 3. **Run the six rounds** from `references/assessment-questions.md`, one
    question at a time. Synthesize attributes from the user's stories — never
@@ -40,7 +42,9 @@ script: `references/assessment-questions.md`. Schema + fixed enums:
    no partial file on disk.
 5. **Write the profile** to the `career_profile` path, matching
    `references/career-profile-schema.md` exactly (quoted dates, fixed enums,
-   maps — not lists of maps).
+   maps — not lists of maps). Write `energizers` and `drains` (round 1), `weaknesses`
+   (round 5), and `interests` (round 6) when the user gave them, in the user's words.
+   `drains` and `weaknesses` are PRIVATE.
 6. **Validate (blocking):**
    ```bash
    python scripts/career_profile_qa.py

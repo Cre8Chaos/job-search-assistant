@@ -27,6 +27,10 @@ result with the QA gate, and optionally renders an ATS PDF. Follow
    phrasing from its strengths evidence for the summary and cover-letter voice —
    **framing only, never new facts**: every employer, date, metric, and claim
    must still trace to the master resume (the QA gate enforces this).
+   It may also use `transferable_skills` and `energizers` from the career profile for
+   framing in the summary and cover letter: framing only, never a new fact, the same
+   rule as `strengths`. Never read `drains`, `weaknesses`, or `interests`.
+   `resume_qa.py` fails any resume or cover letter that contains them.
 3. **Write the tailored resume** into the job file under `## Tailored Resume`, wrapped
    in the `<!-- RESUME:START -->` / `<!-- RESUME:END -->` markers (required so the QA
    gate and PDF renderer can extract it). Structure per `references/job-file-template.md`.
