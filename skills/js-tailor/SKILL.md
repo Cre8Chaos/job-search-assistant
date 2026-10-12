@@ -32,7 +32,7 @@ result with the QA gate, and optionally renders an ATS PDF. Follow
    It may also use `transferable_skills` and `energizers` from the career profile for
    framing in the summary and cover letter: framing only, never a new fact, the same
    rule as `strengths`. Never read `drains`, `weaknesses`, or `interests`.
-   `resume_qa.py` fails any resume or cover letter that contains them.
+   `resume_qa.py` fails any resume or cover letter that contains `drains` or `weaknesses` text.
 3. **Write the tailored resume** into the job file under `## Tailored Resume`, wrapped
    in the `<!-- RESUME:START -->` / `<!-- RESUME:END -->` markers (required so the QA
    gate and PDF renderer can extract it). Structure per `references/job-file-template.md`.

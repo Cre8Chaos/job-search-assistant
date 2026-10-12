@@ -152,23 +152,42 @@ def _phrase_norm(s: str) -> str:
     return re.sub(r"\s+", " ", s).strip()
 
 
+class PrivateProfileError(Exception):
+    """The career profile exists but could not be inspected for private text."""
+
+    def __init__(self, reason: str):
+        super().__init__(reason)
+        self.reason = reason
+
+
 def private_phrases(path) -> tuple[list[str], list[str]] | None:
-    """(checkable, too_short) phrases from drains + weaknesses, or None to skip."""
+    """(checkable, too_short) phrases from drains + weaknesses.
+
+    Returns None only for legitimate absence (no file, a placeholder, or neither
+    key present). Raises PrivateProfileError when the profile is present but
+    cannot be inspected, so the caller can fail closed.
+    """
+    p = Path(path)
     try:
-        p = Path(path)
         if not p.exists() or workspace._is_placeholder(p):
             return None
         prof = search_planner.load_profile(p)
-    except Exception:
-        return None
+    except Exception as ex:
+        raise PrivateProfileError(f"could not read it: {type(ex).__name__}") from ex
     if not isinstance(prof, dict):
+        raise PrivateProfileError("top level is not a map")
+    if "drains" not in prof and "weaknesses" not in prof:
         return None
     raw: list[str] = []
     drains = prof.get("drains")
-    if isinstance(drains, list):
+    if "drains" in prof:
+        if not isinstance(drains, list):
+            raise PrivateProfileError("drains is not a list")
         raw += [str(d) for d in drains]
     weak = prof.get("weaknesses")
-    if isinstance(weak, dict):
+    if "weaknesses" in prof:
+        if not isinstance(weak, dict):
+            raise PrivateProfileError("weaknesses is not a map")
         for name, desc in weak.items():
             raw += [str(name), str(desc)]
     phrases = [n for n in (_phrase_norm(r) for r in raw) if n]
@@ -181,6 +200,12 @@ def private_phrases(path) -> tuple[list[str], list[str]] | None:
 
 def layer1_private(texts: dict[str, str], phrases, master: str = "") -> None:
     name = "No private profile text (drains, weaknesses)"
+    if isinstance(phrases, PrivateProfileError):
+        reason = phrases.reason
+        test(name, 1, lambda: (False, (
+            f"career profile present but could not be checked for private text "
+            f"({reason}); fix it with scripts/career_profile_qa.py before delivering")))
+        return
     if phrases is None:
         print(f"  [skip] {name}  ->  no career profile drains or weaknesses")
         return
@@ -378,10 +403,14 @@ def run(mode, job_file, only_layer, dry_run):
         if only_layer in (None, 1):
             print("\nLayer 1 — Fabrication / fidelity (blocking)")
             layer1_fabrication(tailored, master)
+            try:
+                phrases = private_phrases(p["career_profile"])
+            except PrivateProfileError as err:
+                phrases = err
             layer1_private(
                 {"resume": tailored,
                  "cover letter": jobfile.section(content, "Cover Letter") or ""},
-                private_phrases(p["career_profile"]), master)
+                phrases, master)
         if only_layer in (None, 2):
             print("\nLayer 2 — ATS safety (blocking)")
             layer2_ats(tailored)

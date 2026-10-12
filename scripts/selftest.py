@@ -348,10 +348,18 @@ def main():
         test("QA skips the leak check when the profile has no private keys (exit 0)",
              lambda: (r_nokeys.returncode == 0 and "[skip] No private profile text" in r_nokeys.stdout,
                       f"exit={r_nokeys.returncode}"))
-        cpath.write_text("this: [is: not: yaml\n", encoding="utf-8")
+        # present but uninspectable -> fail closed (the stdlib fallback parser reads
+        # almost any text as a map, so invalid UTF-8 is the reliable unreadable case)
+        cpath.write_bytes(b"drains:\n  - \"\xff\xfe broken\"\n")
         r_bad = run_qa(ws, clean)
-        test("QA does not crash or block on a malformed career profile (exit 0)",
-             lambda: (r_bad.returncode == 0, f"exit={r_bad.returncode}\n{r_bad.stderr[-300:]}"))
+        test("QA blocks when the career profile is present but unreadable (exit 1)",
+             lambda: (r_bad.returncode == 1 and "could not be checked" in r_bad.stdout,
+                      f"exit={r_bad.returncode}\n{r_bad.stdout[-400:]}\n{r_bad.stderr[-300:]}"))
+        cpath.write_text(VALID_CAREER + 'drains: "not a list"\n', encoding="utf-8")
+        r_str = run_qa(ws, clean)
+        test("QA blocks when drains is a plain string, not a list (exit 1)",
+             lambda: (r_str.returncode == 1 and "could not be checked" in r_str.stdout,
+                      f"exit={r_str.returncode}\n{r_str.stdout[-400:]}"))
         cpath.unlink()
         r_none = run_qa(ws, clean)
         test("QA skips the leak check when there is no career profile (exit 0)",
@@ -470,6 +478,14 @@ def main():
         test("career QA only WARNS on malformed v2 keys (exit 0, 2 warnings)",
              lambda: (r_v2bad.returncode == 0 and r_v2bad.stdout.count("[warn] New key") == 2,
                       f"exit={r_v2bad.returncode}\n{r_v2bad.stdout}"))
+        cp.write_text(VALID_CAREER + "energizers:\n  - 5\n  - true\ninterests:\n  - 3\n",
+                      encoding="utf-8")
+        r_typed = run_cp_qa(ws2)
+        test("career QA WARNS on non-string energizers and interests (exit 0)",
+             lambda: (r_typed.returncode == 0 and
+                      "[warn] New key energizers" in r_typed.stdout and
+                      "[warn] New key interests" in r_typed.stdout,
+                      f"exit={r_typed.returncode}\n{r_typed.stdout}"))
         cp.write_text(VALID_CAREER, encoding="utf-8")
         r_v1 = run_cp_qa(ws2)
         test("career QA treats absent v2 keys as fine (v1 profile unchanged)",
@@ -526,6 +542,11 @@ def main():
          lambda: ("and travel %" not in rubric, None))
     test("rubric Output carries the Constraints Gate line and Fit notes block",
          lambda: ("**Constraints Gate:**" in rubric and "**Fit notes**" in rubric, None))
+    test("rubric places the Constraints Gate before the Domain-Expertise Gate",
+         lambda: ("## Constraints Gate" in rubric and "## Domain-Expertise Gate" in rubric and
+                  rubric.index("## Constraints Gate") < rubric.index("## Domain-Expertise Gate"), None))
+    test("rubric says the Constraints Gate runs before the other gates",
+         lambda: ("It runs before the Domain-Expertise and Sponsorship gates." in rubric, None))
     test("Constraints Gate scopes 'words without a number' to travel only",
          lambda: ("For travel, words without a number never produce an F" in gate and
                   "Words without a number never produce an F" not in gate, None))
@@ -536,6 +557,14 @@ def main():
     pfs = (ENGINE / "references" / "profile-schema.md").read_text(encoding="utf-8")
     test("js-evaluate runs the Constraints Gate and writes Fit notes",
          lambda: ("Constraints Gate" in sk["js-evaluate"] and "Fit notes" in sk["js-evaluate"], None))
+    ev = sk["js-evaluate"]
+    test("js-evaluate runs the Constraints Gate before the Domain-Expertise Gate",
+         lambda: ("Constraints Gate" in ev and "Domain-Expertise Gate" in ev and
+                  ev.index("Constraints Gate") < ev.index("Domain-Expertise Gate"), None))
+    test("js-tailor names only drains and weaknesses as what the gate fails on",
+         lambda: ("contains `drains` or `weaknesses` text" in sk["js-tailor"], None))
+    test("js-assess routes commute constraints to location.radius_miles",
+         lambda: ("location.radius_miles" in sk["js-assess"], None))
     test("js-tailor never reads drains, weaknesses or interests",
          lambda: ("Never read `drains`, `weaknesses`, or `interests`" in sk["js-tailor"], None))
     test("js-tailor skips the private Fit notes and Interview Prep in ## Evaluation",

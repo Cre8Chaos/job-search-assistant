@@ -12,3 +12,6 @@ work_model:
 travel:
   max_pct: 25
   relocation: false
+domain:
+  dealbreakers:
+    - "security clearance"

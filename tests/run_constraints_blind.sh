@@ -7,7 +7,7 @@ FIX="$ENGINE/tests/fixtures/constraints"
 OUT="$(mktemp -d)"
 for jd in "$FIX"/0*.md; do
   name="$(basename "$jd" .md)"
-  prompt="You are running the js-evaluate skill below. Apply ONLY its Constraints Gate step to the job description, using the profile. Print exactly one line starting with '**Constraints Gate:**' and, if it is a conflict, the grade line.
+  prompt="You are running the js-evaluate skill below. Run its gates in the order the skill gives them, and stop where the skill says to stop. Do not score the six dimensions and do not do company research. Print the '**Constraints Gate:**' line and the final '**Grade:**' line (write 'Grade: not capped by a gate' if no gate capped it).
 
 === SKILL ===
 $(cat "$ENGINE/skills/js-evaluate/SKILL.md")
@@ -18,6 +18,8 @@ $(cat "$FIX/profile.yaml")
 === JOB DESCRIPTION ===
 $(cat "$jd")"
   (cd "$OUT" && claude -p --tools "" --setting-sources "" --strict-mcp-config --model sonnet "$prompt") > "$OUT/$name.out"
-  echo "== $name"; grep -m2 -E 'Constraints Gate|Grade:' "$OUT/$name.out" || echo "NO GATE LINE"
+  echo "== $name"
+  grep -m1 -F '**Constraints Gate:**' "$OUT/$name.out" || echo "NO GATE LINE"
+  grep -E 'Grade:' "$OUT/$name.out" | tail -n1 | grep . || echo "NO GRADE LINE"
 done
 echo "Raw outputs: $OUT"

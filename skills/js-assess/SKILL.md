@@ -27,9 +27,12 @@ script: `references/assessment-questions.md`. Schema + fixed enums:
    - **Exists → re-assessment mode:** read it, run an abbreviated interview
      focused on what changed since `assessed`, then present a field-level diff
      (old → new) and get explicit approval before writing. Append today's date
-     to `history` — never drop prior dates. If `risk.notes` holds hard constraints
-     (travel, relocation, commute), propose moving them to `profile.yaml`'s `travel`
-     block one line at a time, and write only what the user approves.
+     to `history` — never drop prior dates. If `risk.notes` holds hard constraints,
+     route each to `profile.yaml`: a travel percentage and relocation go to
+     `travel.max_pct` / `travel.relocation`; a commute radius and a remote or hybrid
+     preference go to `location.radius_miles` / `location.remote` / `work_model`.
+     Propose each move one line at a time, write only what the user approves, then
+     run `python scripts/workspace.py validate`.
    - **Absent/placeholder → full interview.**
 3. **Run the six rounds** from `references/assessment-questions.md`, one
    question at a time. Synthesize attributes from the user's stories — never

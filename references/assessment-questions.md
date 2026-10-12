@@ -40,7 +40,10 @@ the motivator vocabulary are fixed in `references/career-profile-schema.md`.
   against `config/profile.yaml` — this round does not replace intake; flag any
   contradiction to the user rather than silently overwriting either file.
 - Also capture one or two `weaknesses` as kebab-name → description (PRIVATE), and
-  route hard constraints to `profile.yaml`'s `travel` block, not `risk.notes`.
+  route hard constraints to `profile.yaml`, not `risk.notes`: travel percentage and
+  relocation to `travel.max_pct` / `travel.relocation`; commute radius and
+  remote/hybrid preference to `location.radius_miles` / `location.remote` /
+  `work_model`.
 
 ## Round 6 — Growth direction → `trajectory_signals` + `adjacent_titles`
 - "Three years from now, what are you doing more of — and what have you managed

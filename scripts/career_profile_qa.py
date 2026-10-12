@@ -171,7 +171,8 @@ def check_advisory(profile: dict):
             if key not in profile:
                 return True, f"{key} not set (optional)"
             val = profile.get(key)
-            if not isinstance(val, list) or not all(str(v or "").strip() for v in val):
+            if not isinstance(val, list) or not all(
+                    isinstance(v, str) and v.strip() for v in val):
                 return False, f"{key} should be a list of non-empty strings"
             return True, f"{len(val)} entr(y/ies)"
         return check
@@ -183,7 +184,8 @@ def check_advisory(profile: dict):
         if not isinstance(val, dict):
             return False, "weaknesses should be a map: kebab-case name -> description"
         bad = [k for k, v in val.items()
-               if not KEBAB_RE.match(str(k)) or not str(v or "").strip()]
+               if not (isinstance(k, str) and KEBAB_RE.match(k))
+               or not (isinstance(v, str) and v.strip())]
         if bad:
             return False, ("weakness(es) need a kebab-case name and a description: "
                            + ", ".join(map(str, bad)))
