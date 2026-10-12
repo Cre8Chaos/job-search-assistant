@@ -325,6 +325,24 @@ def main():
         test("QA skips one-word weakness names instead of matching them (warns, exit 0)",
              lambda: (r_short.returncode == 0 and "too short to check: delegation" in r_short.stdout,
                       f"exit={r_short.returncode}\n{r_short.stdout[-400:]}"))
+        # phrases already in the master are excluded, with a warning (not a block)
+        cpath.write_text(VALID_CAREER + 'weaknesses:\n  people-management: "struggles to delegate"\n',
+                         encoding="utf-8")
+        master_path = ws / "config" / "resume.md"
+        pm_body = RESUME_BODY.replace(anchor, anchor + " Strong at people management.")
+        pm_job = ws / "data" / "jobs" / "pm-job.md"
+        pm_job.write_text(job_file(pm_body), encoding="utf-8")
+        r_pm_out = run_qa(ws, pm_job)
+        test("QA still blocks a private phrase that is NOT in the master (exit 1)",
+             lambda: (r_pm_out.returncode == 1 and "No private profile text" in r_pm_out.stdout,
+                      f"exit={r_pm_out.returncode}\n{r_pm_out.stdout[-500:]}"))
+        master_path.write_text(MASTER.replace(
+            "onboarding domains", "people management and onboarding domains", 1), encoding="utf-8")
+        r_pm_in = run_qa(ws, pm_job)
+        master_path.write_text(MASTER, encoding="utf-8")
+        test("QA excludes a private phrase already in the master and warns (exit 0)",
+             lambda: (r_pm_in.returncode == 0 and "already in master: people management" in r_pm_in.stdout,
+                      f"exit={r_pm_in.returncode}\n{r_pm_in.stdout[-500:]}"))
         cpath.write_text(VALID_CAREER, encoding="utf-8")
         r_nokeys = run_qa(ws, clean)
         test("QA skips the leak check when the profile has no private keys (exit 0)",
@@ -522,6 +540,17 @@ def main():
          lambda: ("Never read `drains`, `weaknesses`, or `interests`" in sk["js-tailor"], None))
     test("js-tailor skips the private Fit notes and Interview Prep in ## Evaluation",
          lambda: ("Skip the **Fit notes**" in sk["js-tailor"] and "**Interview Prep** pack inside `## Evaluation`" in sk["js-tailor"], None))
+    jt = sk["js-tailor"]
+    test("js-tailor re-runs the QA gate after drafting the cover letter",
+         lambda: ("re-run the QA gate" in jt and "Draft the cover letter" in jt and
+                  jt.index("re-run the QA gate") > jt.index("Draft the cover letter"), None))
+    clr = (ENGINE / "references" / "cover-letter-rules.md").read_text(encoding="utf-8")
+    test("cover-letter-rules says the gate checks the letter for private text",
+         lambda: ("is **not** run through `resume_qa.py`" not in clr and
+                  "checks the cover letter only for PRIVATE" in clr, None))
+    atsr = (ENGINE / "references" / "ats-rules.md").read_text(encoding="utf-8")
+    test("ats-rules step 1 skips the private Fit notes and Interview Prep",
+         lambda: ("Skip the **Fit notes**" in atsr, None))
     test("js-find-jobs pre-filter mirrors the Constraints Gate",
          lambda: ("constraints: conflict" in sk["js-find-jobs"], None))
     test("js-setup asks the travel question",

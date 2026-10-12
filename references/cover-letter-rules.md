@@ -22,5 +22,4 @@ as the resume: **every claim must trace to `config/resume.md`.** No fabrication.
 - No clichés ("hard-working team player"), no restating the whole resume.
 - Match the company's tone from the JD (formal vs. casual) where discernible.
 - Write to `## Cover Letter` in the job file.
-- The cover letter is **not** run through `resume_qa.py` (that gate is resume-shaped),
-  but the no-fabrication rule still applies — self-check every claim against the master.
+- `resume_qa.py` checks the cover letter only for PRIVATE career-profile text (drains, weaknesses); re-run it after writing the letter (js-tailor step 5). Its other checks are resume-shaped, so the no-fabrication rule still applies: self-check every claim against the master.

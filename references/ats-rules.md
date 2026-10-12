@@ -21,7 +21,7 @@ stop and tell the user the grade — do not tailor.
 
 ## Steps
 1. **Read inputs:** full `config/resume.md`; the job file's `## Full Job Description`
-   and `## Evaluation`. Note any company values/principles in the JD.
+   and `## Evaluation`. Note any company values/principles in the JD. Skip the **Fit notes** block and the **Interview Prep** pack inside `## Evaluation`: they hold PRIVATE career-profile text and are not tailoring inputs.
 2. **Extract 15–20 ATS keywords** from the JD (exact title words, required
    tools/methods, core responsibilities, differentiators).
 3. **Identify the Top 5 Missing Keywords** — JD keywords that do NOT appear

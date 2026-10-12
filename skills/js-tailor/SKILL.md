@@ -49,6 +49,13 @@ result with the QA gate, and optionally renders an ATS PDF. Follow
    Anchor the "why this company" hook in a **verified fact from the Company Snapshot**
    (a recent move, the ownership structure, a strategic shift) — never a company fact
    stated from memory.
+   Then re-run the QA gate (blocking):
+   ```bash
+   python scripts/resume_qa.py --mode tailored --job "<job_file>"
+   ```
+   It now also checks the cover letter for PRIVATE career-profile text. Exit 1 → remove
+   the flagged text from the cover letter and re-run. Do not render a PDF or mark Ready
+   until exit 0.
 6. **Optional ATS PDF** (only after QA passes):
    ```bash
    python scripts/render_pdf.py "<job_file>"

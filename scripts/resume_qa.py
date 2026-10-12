@@ -179,12 +179,15 @@ def private_phrases(path) -> tuple[list[str], list[str]] | None:
     return checkable, too_short
 
 
-def layer1_private(texts: dict[str, str], phrases) -> None:
+def layer1_private(texts: dict[str, str], phrases, master: str = "") -> None:
     name = "No private profile text (drains, weaknesses)"
     if phrases is None:
         print(f"  [skip] {name}  ->  no career profile drains or weaknesses")
         return
-    checkable, too_short = phrases
+    candidates, too_short = phrases
+    master_hay = f" {_phrase_norm(master or '')} "
+    in_master = [ph for ph in candidates if f" {ph} " in master_hay]
+    checkable = [ph for ph in candidates if ph not in in_master]
 
     def no_leak():
         hits = []
@@ -196,6 +199,9 @@ def layer1_private(texts: dict[str, str], phrases) -> None:
         return True, None
 
     test(name, 1, no_leak)
+    if in_master:
+        test("Private phrases already in the master resume (not checked)", 1,
+             lambda: (False, "already in master: " + ", ".join(in_master)), blocking=False)
     if too_short:
         test("Private phrases long enough to check", 1,
              lambda: (False, "too short to check: " + ", ".join(too_short)), blocking=False)
@@ -375,7 +381,7 @@ def run(mode, job_file, only_layer, dry_run):
             layer1_private(
                 {"resume": tailored,
                  "cover letter": jobfile.section(content, "Cover Letter") or ""},
-                private_phrases(p["career_profile"]))
+                private_phrases(p["career_profile"]), master)
         if only_layer in (None, 2):
             print("\nLayer 2 — ATS safety (blocking)")
             layer2_ats(tailored)
