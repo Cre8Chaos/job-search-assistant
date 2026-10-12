@@ -297,6 +297,49 @@ def main():
         test("QA names the fabricated company in its output",
              lambda: ("Stark Industries" in r_fab.stdout, None))
 
+        # private-leak check (assessment v2)
+        cpath = ws / "config" / "career-profile.yaml"
+        cpath.write_text(VALID_CAREER +
+                         'drains:\n  - "long stretches of status reporting"\n'
+                         'weaknesses:\n  over-scoping: "says yes to too much at the start"\n'
+                         '  delegation: "holds onto work"\n', encoding="utf-8")
+        anchor = "for self-serve and enterprise customers."
+        leak_cases = {
+            "drain phrase in the summary": job_file(RESUME_BODY.replace(
+                anchor, anchor + " Avoids long stretches of status reporting.")),
+            "weakness kebab name in the summary": job_file(RESUME_BODY.replace(
+                anchor, anchor + " Known for over scoping.")),
+            "punctuation/case near-miss": job_file(RESUME_BODY.replace(
+                anchor, anchor + " LONG stretches of status-reporting!")),
+            "drain phrase in the cover letter": job_file(RESUME_BODY).replace(
+                "Dear Hiring Manager, ...", "Dear Hiring Manager, I avoid long stretches of status reporting."),
+        }
+        for label, body in leak_cases.items():
+            jf = ws / "data" / "jobs" / f"leak-{abs(hash(label))}.md"
+            jf.write_text(body, encoding="utf-8")
+            r = run_qa(ws, jf)
+            test(f"QA blocks a private-text leak: {label} (exit 1)",
+                 lambda r=r: (r.returncode == 1 and "No private profile text" in r.stdout,
+                              f"exit={r.returncode}\n{r.stdout[-400:]}"))
+        r_short = run_qa(ws, clean)
+        test("QA skips one-word weakness names instead of matching them (warns, exit 0)",
+             lambda: (r_short.returncode == 0 and "too short to check: delegation" in r_short.stdout,
+                      f"exit={r_short.returncode}\n{r_short.stdout[-400:]}"))
+        cpath.write_text(VALID_CAREER, encoding="utf-8")
+        r_nokeys = run_qa(ws, clean)
+        test("QA skips the leak check when the profile has no private keys (exit 0)",
+             lambda: (r_nokeys.returncode == 0 and "[skip] No private profile text" in r_nokeys.stdout,
+                      f"exit={r_nokeys.returncode}"))
+        cpath.write_text("this: [is: not: yaml\n", encoding="utf-8")
+        r_bad = run_qa(ws, clean)
+        test("QA does not crash or block on a malformed career profile (exit 0)",
+             lambda: (r_bad.returncode == 0, f"exit={r_bad.returncode}\n{r_bad.stderr[-300:]}"))
+        cpath.unlink()
+        r_none = run_qa(ws, clean)
+        test("QA skips the leak check when there is no career profile (exit 0)",
+             lambda: (r_none.returncode == 0 and "[skip] No private profile text" in r_none.stdout,
+                      f"exit={r_none.returncode}"))
+
         # master health is advisory (exit 0)
         r_master = run_qa(ws, mode="master")
         test("master-mode QA is advisory (exit 0)",

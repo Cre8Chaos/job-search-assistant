@@ -33,6 +33,7 @@ import sys
 from pathlib import Path
 
 import jobfile
+import search_planner
 import workspace
 
 # ─── Harness (mirrors qa_agent.py: declarative test(), accumulating _results) ──
@@ -138,6 +139,66 @@ def layer1_fabrication(tailored: str, master: str):
     test("Job titles trace to master resume", 1, titles_in_master)
     test("Company/date lines trace to master", 1, companies_dates_in_master)
     test("Quantified metrics trace to master", 1, metrics_trace_to_master)
+
+
+# ─── Layer 1b — Private profile text (BLOCKING) ────────────────────────────────
+
+MIN_PRIVATE_WORDS = 2  # a one-word phrase would match ordinary resume words
+
+
+def _phrase_norm(s: str) -> str:
+    s = str(s).lower().replace("-", " ")
+    s = re.sub(r"[^\w\s]", " ", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def private_phrases(path) -> tuple[list[str], list[str]] | None:
+    """(checkable, too_short) phrases from drains + weaknesses, or None to skip."""
+    try:
+        p = Path(path)
+        if not p.exists() or workspace._is_placeholder(p):
+            return None
+        prof = search_planner.load_profile(p)
+    except Exception:
+        return None
+    if not isinstance(prof, dict):
+        return None
+    raw: list[str] = []
+    drains = prof.get("drains")
+    if isinstance(drains, list):
+        raw += [str(d) for d in drains]
+    weak = prof.get("weaknesses")
+    if isinstance(weak, dict):
+        for name, desc in weak.items():
+            raw += [str(name), str(desc)]
+    phrases = [n for n in (_phrase_norm(r) for r in raw) if n]
+    if not phrases:
+        return None
+    checkable = [ph for ph in phrases if len(ph.split()) >= MIN_PRIVATE_WORDS]
+    too_short = [ph for ph in phrases if len(ph.split()) < MIN_PRIVATE_WORDS]
+    return checkable, too_short
+
+
+def layer1_private(texts: dict[str, str], phrases) -> None:
+    name = "No private profile text (drains, weaknesses)"
+    if phrases is None:
+        print(f"  [skip] {name}  ->  no career profile drains or weaknesses")
+        return
+    checkable, too_short = phrases
+
+    def no_leak():
+        hits = []
+        for label, text in texts.items():
+            hay = f" {_phrase_norm(text or '')} "
+            hits += [f"{label}: '{ph}'" for ph in checkable if f" {ph} " in hay]
+        if hits:
+            return False, "private profile text found in " + "; ".join(hits)
+        return True, None
+
+    test(name, 1, no_leak)
+    if too_short:
+        test("Private phrases long enough to check", 1,
+             lambda: (False, "too short to check: " + ", ".join(too_short)), blocking=False)
 
 
 # ─── Layer 2 — ATS safety (BLOCKING) ────────────────────────────────────────────
@@ -311,6 +372,10 @@ def run(mode, job_file, only_layer, dry_run):
         if only_layer in (None, 1):
             print("\nLayer 1 — Fabrication / fidelity (blocking)")
             layer1_fabrication(tailored, master)
+            layer1_private(
+                {"resume": tailored,
+                 "cover letter": jobfile.section(content, "Cover Letter") or ""},
+                private_phrases(p["career_profile"]))
         if only_layer in (None, 2):
             print("\nLayer 2 — ATS safety (blocking)")
             layer2_ats(tailored)
