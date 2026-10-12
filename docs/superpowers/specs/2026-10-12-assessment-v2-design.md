@@ -1,7 +1,7 @@
 # Assessment v2: a Constraints Gate, and profile fields that actually get read
 
-Date: 2026-10-12. Status: design approved section by section in chat by the
-maintainer; awaiting review of this written spec.
+Date: 2026-10-12. Status: APPROVED by the maintainer 2026-10-12 (travel cutoff set to 25% at review). Designed section by section in chat by the
+maintainer.
 Scope: the Product (`job-search-assistant`) only. The Daily Driver is out of scope.
 
 ## Problem
@@ -29,7 +29,7 @@ outside the radius, and it records travel % as "note only".
    Everything else shapes what the user reads and never changes a grade.
 2. **An explicit conflict caps the grade at F. Silence is flagged with no penalty.**
    This copies the existing Sponsorship Gate.
-3. **The travel cutoff is a number: 20%.** Stored per user, not hardcoded.
+3. **The travel cutoff is a number: 25% (changed from 20% at spec review).** Stored per user, not hardcoded.
 4. **Drains and weaknesses are private.** They may appear only in js-evaluate's Fit
    notes and Interview Prep, never in a resume or cover letter, and a QA check
    enforces that.
@@ -55,7 +55,7 @@ Documented in `references/profile-schema.md`.
 
 ```yaml
 travel:                 # optional; absent = Constraints Gate dormant (today's behavior)
-  max_pct: 20           # integer 0-100; an explicit JD figure above this is a conflict
+  max_pct: 25           # integer 0-100; an explicit JD figure above this is a conflict
   relocation: false     # false = an explicit relocation requirement is a conflict
 ```
 
@@ -139,7 +139,7 @@ plus the existing `{{LOCATION}}` and `{{RADIUS_MILES}}`.
 **Three checks. Each CONFLICT requires a quoted line from the JD body. No quote, no F.**
 
 1. **Travel.** A stated percentage above `{{MAX_TRAVEL_PCT}}` is a conflict. For a
-   range or an "up to", use the top number: "up to 25%" and "10-25%" both read as 25.
+   range or an "up to", use the top number: "up to 30%" and "10-30%" both read as 30. A figure equal to the cutoff passes.
 2. **Relocation.** When `{{RELOCATION_OK}}` is false: "must relocate", "relocation
    required", or "must be based in <city>" (a city outside the radius) is a conflict.
    "Relocation assistance available" is not.
@@ -173,7 +173,7 @@ flagged `constraints: conflict`. When unsure, keep and flag.
 
 **Sanity check against the kinds of JD lines seen in the 2026-10-12 triage:**
 
-| JD says | Expected (max 20%, no relocation) |
+| JD says | Expected (max 25%, no relocation) |
 |---|---|
 | "Travel up to 30%+ for onsite workshops" | CONFLICT → F (travel) |
 | "This role operates in a standard office environment", office 60 mi away | CONFLICT → F (onsite outside radius) |
