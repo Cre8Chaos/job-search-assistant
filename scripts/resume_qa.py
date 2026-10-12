@@ -160,6 +160,23 @@ class PrivateProfileError(Exception):
         self.reason = reason
 
 
+PRIVATE_KEY_LINE = re.compile(r"^(drains|weaknesses)\s*:", re.M)
+
+
+def _require_keys_not_dropped(path: Path, prof: dict) -> None:
+    """The fallback parser is permissive: a top-level private key in the text that
+    is missing from the parsed map was dropped, not absent. Fail closed."""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as ex:
+        raise PrivateProfileError(f"could not read it: {type(ex).__name__}") from ex
+    for m in PRIVATE_KEY_LINE.finditer(text):
+        key = m.group(1)
+        if key not in prof:
+            raise PrivateProfileError(
+                f"career-profile text has a top-level {key}: line the parser could not read")
+
+
 def private_phrases(path) -> tuple[list[str], list[str]] | None:
     """(checkable, too_short) phrases from drains + weaknesses.
 
@@ -176,6 +193,7 @@ def private_phrases(path) -> tuple[list[str], list[str]] | None:
         raise PrivateProfileError(f"could not read it: {type(ex).__name__}") from ex
     if not isinstance(prof, dict):
         raise PrivateProfileError("top level is not a map")
+    _require_keys_not_dropped(p, prof)
     if "drains" not in prof and "weaknesses" not in prof:
         return None
     raw: list[str] = []

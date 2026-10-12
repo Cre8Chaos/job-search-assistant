@@ -1,0 +1,30 @@
+version: 1
+assessed: "2026-07-23"
+history:
+  - "2026-07-23"
+strengths:
+  systems-thinking: "Mapped the whole claims intake flow before rebuilding it"
+work_style:
+  autonomy: high
+  depth_vs_breadth: breadth
+  collaboration: cross-functional
+motivators:
+  - mastery
+  - impact
+energizers:
+  - "untangling a messy process"
+drains:
+  - "long stretches of status reporting"
+weaknesses:
+  over-scoping: "says yes to too much at the start of a project"
+transferable_skills:
+  stakeholder management: "insurance product delivery"
+risk:
+  appetite: medium
+adjacent_titles:
+  - "Solutions Consultant"
+trajectory_signals:
+  moving_toward:
+    - "AI-adjacent delivery leadership"
+  moving_away_from:
+    - "pure people management"

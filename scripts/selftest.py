@@ -360,6 +360,36 @@ def main():
         test("QA blocks when drains is a plain string, not a list (exit 1)",
              lambda: (r_str.returncode == 1 and "could not be checked" in r_str.stdout,
                       f"exit={r_str.returncode}\n{r_str.stdout[-400:]}"))
+        # parser probe: these shapes parse to a map WITHOUT the key although the text has it
+        vanish = {
+            "drains items indented with a tab": 'drains:\n\t- "long stretches of status reporting"\n',
+            "drains items at column 0": 'drains:\n- "long stretches of status reporting"\n',
+            "weaknesses entries at column 0": 'weaknesses:\nover-scoping: "says yes to too much"\n',
+            "weaknesses entries tab-indented": 'weaknesses:\n\tover-scoping: "says yes to too much"\n',
+        }
+        for label, tail in vanish.items():
+            cpath.write_text(VALID_CAREER + tail, encoding="utf-8")
+            r_v = run_qa(ws, clean)
+            test(f"QA blocks when the parser drops a private key: {label} (exit 1)",
+                 lambda r_v=r_v: (r_v.returncode == 1 and "could not be checked" in r_v.stdout
+                                  and "could not read" in r_v.stdout,
+                                  f"exit={r_v.returncode}\n{r_v.stdout[-400:]}"))
+        # direct unit test of the backstop: text has `drains:` but the parse lacks it
+        import resume_qa as _rq
+        cpath.write_text(VALID_CAREER + 'drains:\n  - "long stretches of status reporting"\n',
+                         encoding="utf-8")
+        _orig_lp = _rq.search_planner.load_profile
+        _rq.search_planner.load_profile = lambda path: {"version": 1}
+        try:
+            try:
+                _rq.private_phrases(cpath)
+                _raised = ""
+            except _rq.PrivateProfileError as ex:
+                _raised = ex.reason
+        finally:
+            _rq.search_planner.load_profile = _orig_lp
+        test("private_phrases raises when the text has drains: but the parse lacks it",
+             lambda: ("top-level drains: line" in _raised, _raised))
         cpath.unlink()
         r_none = run_qa(ws, clean)
         test("QA skips the leak check when there is no career profile (exit 0)",
